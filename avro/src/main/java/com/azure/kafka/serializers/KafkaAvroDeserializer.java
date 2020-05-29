@@ -1,13 +1,12 @@
-/*
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License.
- */
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 package com.azure.kafka.serializers;
 
-import com.azure.schemaregistry.AbstractDataDeserializer;
-import com.azure.schemaregistry.avro.AvroByteDecoder;
-import com.azure.schemaregistry.client.CachedSchemaRegistryClient;
+import com.azure.core.credential.TokenCredential;
+import com.azure.data.schemaregistry.AbstractDataDeserializer;
+import com.azure.data.schemaregistry.avro.AvroByteDecoder;
+import com.azure.data.schemaregistry.client.CachedSchemaRegistryClientBuilder;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 
@@ -41,21 +40,27 @@ public class KafkaAvroDeserializer extends AbstractDataDeserializer
      *
      * @see KafkaAvroDeserializerConfig Deserializer will use configs found in here and inherited classes.
      */
-    @Override
     public void configure(Map<String, ?> props, boolean isKey) {
-        String registryUrl = (String) props.get(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG);
+        Map<String, Object> kafkaProps = (Map<String, Object>) props;
+        String registryUrl = (String) kafkaProps.get(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG);
 
-        Boolean useAvroSpecificReader = (Boolean) props.get(KafkaAvroDeserializerConfig.AVRO_SPECIFIC_READER_CONFIG);
-        AvroByteDecoder.Builder decoderBuilder = new AvroByteDecoder.Builder();
-        if (useAvroSpecificReader != null) {
-            decoderBuilder = decoderBuilder.avroSpecificReader(useAvroSpecificReader);
-        }
-        AvroByteDecoder decoder = decoderBuilder.build();
-        this.schemaRegistryClient = new CachedSchemaRegistryClient.Builder(registryUrl)
-                .loadSchemaParser(decoder.serializationFormat(), (s) -> decoder.parseSchemaString(s))
-                .build();
+        Boolean useSpecificAvroReader = (Boolean) kafkaProps.getOrDefault(
+                KafkaAvroDeserializerConfig.AVRO_SPECIFIC_READER_CONFIG,
+                KafkaAvroDeserializerConfig.AVRO_SPECIFIC_READER_CONFIG_DEFAULT);
+        AvroByteDecoder decoder = new AvroByteDecoder(useSpecificAvroReader);
 
-        this.byteDecoderMap.put(decoder.serializationFormat(), decoder);
+        TokenCredential credential = (TokenCredential) kafkaProps.get(
+                KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_CREDENTIAL_CONFIG);
+
+        Integer maxSchemaMapSize = (Integer) kafkaProps.get(KafkaAvroDeserializerConfig.MAX_SCHEMA_MAP_SIZE_CONFIG);
+
+        this.schemaRegistryClient = new CachedSchemaRegistryClientBuilder()
+                .endpoint(registryUrl)
+                .credential(credential)
+                .maxSchemaMapSize(maxSchemaMapSize)
+                .buildClient();
+
+        this.loadByteDecoder(decoder);
     }
 
     /**
@@ -69,7 +74,7 @@ public class KafkaAvroDeserializer extends AbstractDataDeserializer
     public Object deserialize(String topic, byte[] bytes) throws SerializationException {
         try {
             return deserialize(bytes);
-        } catch (com.azure.schemaregistry.SerializationException e) {
+        } catch (com.azure.data.schemaregistry.SerializationException e) {
             throw new SerializationException(e.getCause());
         }
     }

@@ -1,13 +1,12 @@
-/*
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License.
- */
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 package com.azure.kafka.serializers;
 
-import com.azure.schemaregistry.AbstractDataSerializer;
-import com.azure.schemaregistry.avro.AvroByteEncoder;
-import com.azure.schemaregistry.client.CachedSchemaRegistryClient;
+import com.azure.core.credential.TokenCredential;
+import com.azure.data.schemaregistry.AbstractDataSerializer;
+import com.azure.data.schemaregistry.avro.AvroByteEncoder;
+import com.azure.data.schemaregistry.client.CachedSchemaRegistryClientBuilder;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
@@ -43,20 +42,29 @@ public class KafkaAvroSerializer extends AbstractDataSerializer
      */
     @Override
     public void configure(Map<String, ?> props, boolean isKey) {
-        this.byteEncoder = new AvroByteEncoder.Builder().build();
-        this.serializationFormat = this.byteEncoder.serializationFormat();
+        Map<String, Object> kafkaProps = (Map<String, Object>) props;
         String registryUrl = (String) props.get(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG);
-        this.schemaRegistryClient = new CachedSchemaRegistryClient.Builder(registryUrl)
-                .loadSchemaParser(serializationFormat, (s) -> byteEncoder.parseSchemaString(s))
-                .build();
+
+        TokenCredential credential = (TokenCredential) kafkaProps.get(
+                KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_CREDENTIAL_CONFIG);
+
+        Integer maxSchemaMapSize = (Integer) kafkaProps.get(KafkaAvroDeserializerConfig.MAX_SCHEMA_MAP_SIZE_CONFIG);
+
+        this.schemaRegistryClient = new CachedSchemaRegistryClientBuilder()
+                .endpoint(registryUrl)
+                .credential(credential)
+                .maxSchemaMapSize(maxSchemaMapSize)
+                .buildClient();
+
+        if (props.containsKey(KafkaAvroSerializerConfig.SCHEMA_GROUP_CONFIG)) {
+            this.schemaGroup = (String) props.get(KafkaAvroSerializerConfig.SCHEMA_GROUP_CONFIG);
+        }
 
         if (props.containsKey(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS_CONFIG)) {
             this.autoRegisterSchemas = (Boolean)props.get(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS_CONFIG);
         }
 
-        if (props.containsKey(KafkaAvroSerializerConfig.SCHEMA_GROUP_CONFIG)) {
-            this.schemaGroup = (String) props.get(KafkaAvroSerializerConfig.SCHEMA_GROUP_CONFIG);
-        }
+        this.setByteEncoder(new AvroByteEncoder());
     }
 
 
@@ -84,7 +92,7 @@ public class KafkaAvroSerializer extends AbstractDataSerializer
 
         try {
             return serializeImpl(record);
-        } catch (com.azure.schemaregistry.SerializationException e) {
+        } catch (com.azure.data.schemaregistry.SerializationException e) {
             // convert into kafka exception
             throw new SerializationException(e.getCause());
         }
