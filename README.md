@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="event-hubs.png" alt="Microsoft Azure Event Hubs" width="100"/>
+</p>
+
+<h1>Azure Schema Registry for Kafka</h1> 
 
 # Contributing
 
