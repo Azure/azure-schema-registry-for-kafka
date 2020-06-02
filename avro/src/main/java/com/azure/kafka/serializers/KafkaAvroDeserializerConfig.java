@@ -3,15 +3,31 @@
 
 package com.azure.kafka.serializers;
 
-public class KafkaAvroDeserializerConfig extends AbstractKafkaSerdeConfig {
+import java.util.Map;
+
+/**
+ *
+ */
+public final class KafkaAvroDeserializerConfig extends AbstractKafkaSerdeConfig {
 
     /**
-     * Configures deserializer to look up and decode into SpecificRecord class instance when reading encoded bytes
+     * Configures deserializer to decode into SpecificRecord class instance when reading encoded bytes
+     *
+     * Defaults to false (using Avro GenericRecords)
      */
-    public static String AVRO_SPECIFIC_READER_CONFIG = "specific.avro.reader";
+    public static final String AVRO_SPECIFIC_READER_CONFIG = "specific.avro.reader";
+
+    public static final Boolean AVRO_SPECIFIC_READER_CONFIG_DEFAULT = false;
+
+    KafkaAvroDeserializerConfig(Map<String, ?> props) {
+        super(props);
+    }
 
     /**
-     * Default value if 'specific.avro.reader' is not specified.
+     * @return avro specific reader flag, with default set to false
      */
-    public static boolean AVRO_SPECIFIC_READER_CONFIG_DEFAULT = false;
+    public Boolean getAvroSpecificReader() {
+        return (Boolean) this.getProps().getOrDefault(
+                AVRO_SPECIFIC_READER_CONFIG, AVRO_SPECIFIC_READER_CONFIG_DEFAULT);
+    }
 }

@@ -26,7 +26,9 @@ import java.util.Map;
 public class KafkaAvroDeserializer extends AbstractDataDeserializer
         implements Deserializer<Object> {
 
-    // Constructor used by Kafka consumer.
+    /**
+     * Empty constructor used by Kafka consumer
+     */
     public KafkaAvroDeserializer() {
         super();
     }
@@ -41,18 +43,13 @@ public class KafkaAvroDeserializer extends AbstractDataDeserializer
      * @see KafkaAvroDeserializerConfig Deserializer will use configs found in here and inherited classes.
      */
     public void configure(Map<String, ?> props, boolean isKey) {
-        Map<String, Object> kafkaProps = (Map<String, Object>) props;
-        String registryUrl = (String) kafkaProps.get(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG);
+        KafkaAvroDeserializerConfig config = new KafkaAvroDeserializerConfig(props);
+        String registryUrl = config.getSchemaRegistryUrl();
+        TokenCredential credential = config.getCredential();
+        Integer maxSchemaMapSize = config.getMaxSchemaMapSize();
 
-        Boolean useSpecificAvroReader = (Boolean) kafkaProps.getOrDefault(
-                KafkaAvroDeserializerConfig.AVRO_SPECIFIC_READER_CONFIG,
-                KafkaAvroDeserializerConfig.AVRO_SPECIFIC_READER_CONFIG_DEFAULT);
+        Boolean useSpecificAvroReader = config.getAvroSpecificReader();
         AvroByteDecoder decoder = new AvroByteDecoder(useSpecificAvroReader);
-
-        TokenCredential credential = (TokenCredential) kafkaProps.get(
-                KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_CREDENTIAL_CONFIG);
-
-        Integer maxSchemaMapSize = (Integer) kafkaProps.get(KafkaAvroDeserializerConfig.MAX_SCHEMA_MAP_SIZE_CONFIG);
 
         this.schemaRegistryClient = new CachedSchemaRegistryClientBuilder()
                 .endpoint(registryUrl)

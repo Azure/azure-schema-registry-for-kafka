@@ -26,7 +26,9 @@ import java.util.Map;
 public class KafkaAvroSerializer extends AbstractDataSerializer
         implements Serializer<Object> {
 
-    // Constructor used by Kafka producer.
+    /**
+     * Empty constructor for Kafka producer
+     */
     public KafkaAvroSerializer() {
         super();
     }
@@ -38,31 +40,27 @@ public class KafkaAvroSerializer extends AbstractDataSerializer
      * @param isKey Indicates if serializing record key or value.  Required by Kafka serializer interface,
      *              no specific functionality implemented for key use.
      *
-     * @see KafkaAvroSerializerConfig Serializer will use configs found in KafkaAvroSerializerConfig and inherited classes.
+     * @see KafkaAvroSerializerConfig Serializer will use configs found in KafkaAvroSerializerConfig.
      */
     @Override
     public void configure(Map<String, ?> props, boolean isKey) {
-        Map<String, Object> kafkaProps = (Map<String, Object>) props;
-        String registryUrl = (String) props.get(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG);
+        KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig(props);
+        String registryUrl = config.getSchemaRegistryUrl();
+        TokenCredential credential = config.getCredential();
+        Integer maxSchemaMapSize = config.getMaxSchemaMapSize();
 
-        TokenCredential credential = (TokenCredential) kafkaProps.get(
-                KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_CREDENTIAL_CONFIG);
-
-        Integer maxSchemaMapSize = (Integer) kafkaProps.get(KafkaAvroDeserializerConfig.MAX_SCHEMA_MAP_SIZE_CONFIG);
-
-        this.schemaRegistryClient = new CachedSchemaRegistryClientBuilder()
+        CachedSchemaRegistryClientBuilder builder = new CachedSchemaRegistryClientBuilder()
                 .endpoint(registryUrl)
-                .credential(credential)
-                .maxSchemaMapSize(maxSchemaMapSize)
-                .buildClient();
+                .credential(credential);
 
-        if (props.containsKey(KafkaAvroSerializerConfig.SCHEMA_GROUP_CONFIG)) {
-            this.schemaGroup = (String) props.get(KafkaAvroSerializerConfig.SCHEMA_GROUP_CONFIG);
+        if (maxSchemaMapSize != null) {
+            builder.maxSchemaMapSize(maxSchemaMapSize);
         }
 
-        if (props.containsKey(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS_CONFIG)) {
-            this.autoRegisterSchemas = (Boolean)props.get(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS_CONFIG);
-        }
+        this.schemaRegistryClient = builder.buildClient();
+
+        this.schemaGroup = config.getSchemaGroup();
+        this.autoRegisterSchemas = config.getAutoRegisterSchemas();
 
         this.setByteEncoder(new AvroByteEncoder());
     }
