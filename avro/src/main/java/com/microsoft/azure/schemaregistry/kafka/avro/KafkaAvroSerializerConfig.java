@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.azure.kafka.serializers;
+package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import java.util.Map;
 

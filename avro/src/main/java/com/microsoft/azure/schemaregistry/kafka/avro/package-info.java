@@ -1,0 +1,1 @@
+package com.microsoft.azure.schemaregistry.kafka.avro;
