@@ -1,0 +1,15 @@
+{
+    "type": "record",
+    "name": "AvroUser",
+    "namespace": "com.azure.schemaregistry.samples",
+    "fields": [
+        {
+            "name": "name",
+            "type": "string"
+        },
+        {
+            "name": "favoriteNumber",
+            "type": "int"
+        }
+    ]
+}
