@@ -49,14 +49,19 @@
       <artifactId>kafka-clients</artifactId>
       <version>2.3.1</version>
     </dependency>
-    <dependency>
-      <groupId>com.azure</groupId>
-      <artifactId>azure-data-schemaregistry</artifactId>
-      <version>1.0.0-beta.2</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>com.azure</groupId>-->
+<!--      <artifactId>azure-data-schemaregistry</artifactId>-->
+<!--      <version>1.0.0-beta.2</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-data-schemaregistry-avro</artifactId>
+      <version>1.0.0-beta.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-core-serializer-avro-apache</artifactId>
       <version>1.0.0-beta.2</version>
     </dependency>
   </dependencies>

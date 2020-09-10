@@ -4,12 +4,14 @@
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import com.azure.core.credential.TokenCredential;
-import com.azure.data.schemaregistry.AbstractDataSerializer;
-import com.azure.data.schemaregistry.avro.AvroByteEncoder;
+import com.azure.data.schemaregistry.SchemaRegistrySerializer;
+import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializer;
+import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializerBuilder;
 import com.azure.data.schemaregistry.client.CachedSchemaRegistryClientBuilder;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
+import javax.xml.validation.Schema;
 import java.util.Map;
 
 /**
@@ -20,11 +22,11 @@ import java.util.Map;
  *
  * Currently, sending Avro GenericRecords and SpecificRecords is supported.  Avro reflection has been disabled.
  *
- * @see AbstractDataSerializer See abstract parent class for implementation details
+ * @see com.azure.data.schemaregistry.SchemaRegistrySerializer See abstract parent class for implementation details
  * @see KafkaAvroDeserializer See deserializer class for downstream deserializer implementation
  */
-public class KafkaAvroSerializer extends AbstractDataSerializer
-        implements Serializer<Object> {
+public class KafkaAvroSerializer implements Serializer<Object> {
+    private final SchemaRegistryAvroSerializer serializer;
 
     /**
      * Empty constructor for Kafka producer
@@ -45,24 +47,14 @@ public class KafkaAvroSerializer extends AbstractDataSerializer
     @Override
     public void configure(Map<String, ?> props, boolean isKey) {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig(props);
-        String registryUrl = config.getSchemaRegistryUrl();
-        TokenCredential credential = config.getCredential();
-        Integer maxSchemaMapSize = config.getMaxSchemaMapSize();
 
-        CachedSchemaRegistryClientBuilder builder = new CachedSchemaRegistryClientBuilder()
-                .endpoint(registryUrl)
-                .credential(credential);
-
-        if (maxSchemaMapSize != null) {
-            builder.maxSchemaMapSize(maxSchemaMapSize);
-        }
-
-        this.schemaRegistryClient = builder.buildClient();
-
-        this.schemaGroup = config.getSchemaGroup();
-        this.autoRegisterSchemas = config.getAutoRegisterSchemas();
-
-        this.setByteEncoder(new AvroByteEncoder());
+        this.serializer = new SchemaRegistryAvroSerializerBuilder()
+                .schemaRegistryUrl(config.getSchemaRegistryUrl())
+                .credential(config.getCredential())
+                .maxCacheSize(config.getMaxSchemaMapSize())
+                .schemaGroup(config.getSchemaGroup())
+                .autoRegisterSchema(config.getAutoRegisterSchemas())
+                .buildSerializer();
     }
 
 
