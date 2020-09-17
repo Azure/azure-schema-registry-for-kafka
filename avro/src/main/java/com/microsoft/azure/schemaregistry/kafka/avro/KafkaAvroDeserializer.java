@@ -4,6 +4,7 @@
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import com.azure.core.util.serializer.TypeReference;
+import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializer;
 import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializerBuilder;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -44,9 +45,11 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
         KafkaAvroDeserializerConfig config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
 
         this.serializer = new SchemaRegistryAvroSerializerBuilder()
-                .schemaRegistryUrl(config.getSchemaRegistryUrl())
-                .credential(config.getCredential())
-                .maxCacheSize(config.getMaxSchemaMapSize())
+                .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
+                        .endpoint(config.getSchemaRegistryUrl())
+                        .credential(config.getCredential())
+                        .maxCacheSize(config.getMaxSchemaMapSize())
+                        .buildAsyncClient())
                 .avroSpecificReader(config.getAvroSpecificReader())
                 .buildSerializer();
     }

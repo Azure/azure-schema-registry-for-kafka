@@ -3,6 +3,7 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
+import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializer;
 import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializerBuilder;
 import org.apache.kafka.common.errors.SerializationException;
@@ -46,9 +47,11 @@ public class KafkaAvroSerializer implements Serializer<Object> {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
 
         this.serializer = new SchemaRegistryAvroSerializerBuilder()
-                .schemaRegistryUrl(config.getSchemaRegistryUrl())
-                .credential(config.getCredential())
-                .maxCacheSize(config.getMaxSchemaMapSize())
+                .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
+                        .endpoint(config.getSchemaRegistryUrl())
+                        .credential(config.getCredential())
+                        .maxCacheSize(config.getMaxSchemaMapSize())
+                        .buildAsyncClient())
                 .schemaGroup(config.getSchemaGroup())
                 .autoRegisterSchema(config.getAutoRegisterSchemas())
                 .buildSerializer();
