@@ -34,7 +34,7 @@ public final class KafkaAvroSerializerConfig extends AbstractKafkaSerdeConfig {
 
     public static final String SCHEMA_GROUP_CONFIG_DEFAULT = "$default";
 
-    KafkaAvroSerializerConfig(Map<String, ?> props) {
+    KafkaAvroSerializerConfig(Map<String, Object> props) {
         super(props);
     }
 

@@ -3,15 +3,12 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
-import com.azure.core.credential.TokenCredential;
-import com.azure.data.schemaregistry.SchemaRegistrySerializer;
 import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializer;
 import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializerBuilder;
-import com.azure.data.schemaregistry.client.CachedSchemaRegistryClientBuilder;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
-import javax.xml.validation.Schema;
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
 /**
@@ -26,7 +23,7 @@ import java.util.Map;
  * @see KafkaAvroDeserializer See deserializer class for downstream deserializer implementation
  */
 public class KafkaAvroSerializer implements Serializer<Object> {
-    private final SchemaRegistryAvroSerializer serializer;
+    private SchemaRegistryAvroSerializer serializer;
 
     /**
      * Empty constructor for Kafka producer
@@ -46,7 +43,7 @@ public class KafkaAvroSerializer implements Serializer<Object> {
      */
     @Override
     public void configure(Map<String, ?> props, boolean isKey) {
-        KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig(props);
+        KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
 
         this.serializer = new SchemaRegistryAvroSerializerBuilder()
                 .schemaRegistryUrl(config.getSchemaRegistryUrl())
@@ -70,7 +67,7 @@ public class KafkaAvroSerializer implements Serializer<Object> {
      * @throws SerializationException Exception catchable by core Kafka producer code
      */
     @Override
-    public byte[] serialize(String topic, Object record) throws SerializationException {
+    public byte[] serialize(String topic, Object record) {
         // null needs to treated specially since the client most likely just wants to send
         // an individual null value instead of making the subject a null type. Also, null in
         // Kafka has a special meaning for deletion in a topic with the compact retention policy.
@@ -80,12 +77,9 @@ public class KafkaAvroSerializer implements Serializer<Object> {
             return null;
         }
 
-        try {
-            return serializeImpl(record);
-        } catch (com.azure.data.schemaregistry.SerializationException e) {
-            // convert into kafka exception
-            throw new SerializationException(e.getCause());
-        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        serializer.serialize(out, record);
+        return out.toByteArray();
     }
 
     @Override

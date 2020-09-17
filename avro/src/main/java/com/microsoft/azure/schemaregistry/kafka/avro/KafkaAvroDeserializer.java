@@ -3,13 +3,12 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
-import com.azure.core.credential.TokenCredential;
-import com.azure.data.schemaregistry.AbstractDataDeserializer;
-import com.azure.data.schemaregistry.avro.AvroByteDecoder;
-import com.azure.data.schemaregistry.client.CachedSchemaRegistryClientBuilder;
-import org.apache.kafka.common.errors.SerializationException;
+import com.azure.core.util.serializer.TypeReference;
+import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializer;
+import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializerBuilder;
 import org.apache.kafka.common.serialization.Deserializer;
 
+import java.io.ByteArrayInputStream;
 import java.util.Map;
 
 /**
@@ -20,11 +19,10 @@ import java.util.Map;
  * Receiving Avro GenericRecords and SpecificRecords is supported.  Avro reflection capabilities have been disabled on
  * com.azure.schemaregistry.kafka.KafkaAvroSerializer.
  *
- * @see AbstractDataDeserializer See abstract parent class for implementation details
  * @see KafkaAvroSerializer See serializer class for upstream serializer implementation
  */
-public class KafkaAvroDeserializer extends AbstractDataDeserializer
-        implements Deserializer<Object> {
+public class KafkaAvroDeserializer implements Deserializer<Object> {
+    private SchemaRegistryAvroSerializer serializer;
 
     /**
      * Empty constructor used by Kafka consumer
@@ -43,21 +41,14 @@ public class KafkaAvroDeserializer extends AbstractDataDeserializer
      * @see KafkaAvroDeserializerConfig Deserializer will use configs found in here and inherited classes.
      */
     public void configure(Map<String, ?> props, boolean isKey) {
-        KafkaAvroDeserializerConfig config = new KafkaAvroDeserializerConfig(props);
-        String registryUrl = config.getSchemaRegistryUrl();
-        TokenCredential credential = config.getCredential();
-        Integer maxSchemaMapSize = config.getMaxSchemaMapSize();
+        KafkaAvroDeserializerConfig config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
 
-        Boolean useSpecificAvroReader = config.getAvroSpecificReader();
-        AvroByteDecoder decoder = new AvroByteDecoder(useSpecificAvroReader);
-
-        this.schemaRegistryClient = new CachedSchemaRegistryClientBuilder()
-                .endpoint(registryUrl)
-                .credential(credential)
-                .maxSchemaMapSize(maxSchemaMapSize)
-                .buildClient();
-
-        this.loadByteDecoder(decoder);
+        this.serializer = new SchemaRegistryAvroSerializerBuilder()
+                .schemaRegistryUrl(config.getSchemaRegistryUrl())
+                .credential(config.getCredential())
+                .maxCacheSize(config.getMaxSchemaMapSize())
+                .avroSpecificReader(config.getAvroSpecificReader())
+                .buildSerializer();
     }
 
     /**
@@ -65,15 +56,11 @@ public class KafkaAvroDeserializer extends AbstractDataDeserializer
      * @param topic topic associated with the record bytes
      * @param bytes serialized bytes, may be null
      * @return deserialize object, may be null
-     * @throws SerializationException catchable by core Kafka fetcher code
      */
     @Override
-    public Object deserialize(String topic, byte[] bytes) throws SerializationException {
-        try {
-            return deserialize(bytes);
-        } catch (com.azure.data.schemaregistry.SerializationException e) {
-            throw new SerializationException(e.getCause());
-        }
+    public Object deserialize(String topic, byte[] bytes) {
+        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+        return serializer.deserialize(in, TypeReference.createInstance(Object.class));
     }
 
     @Override

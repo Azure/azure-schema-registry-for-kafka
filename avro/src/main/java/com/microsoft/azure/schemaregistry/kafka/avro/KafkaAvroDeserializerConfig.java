@@ -19,7 +19,7 @@ public final class KafkaAvroDeserializerConfig extends AbstractKafkaSerdeConfig 
 
     public static final Boolean AVRO_SPECIFIC_READER_CONFIG_DEFAULT = false;
 
-    KafkaAvroDeserializerConfig(Map<String, ?> props) {
+    KafkaAvroDeserializerConfig(Map<String, Object> props) {
         super(props);
     }
 

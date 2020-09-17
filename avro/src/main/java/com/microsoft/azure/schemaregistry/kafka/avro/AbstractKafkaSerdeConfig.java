@@ -12,7 +12,7 @@ import java.util.Map;
  *
  */
 class AbstractKafkaSerdeConfig {
-    private Map<String, ?> props;
+    private Map<String, Object> props;
 
     /**
      * Required.
@@ -38,11 +38,11 @@ class AbstractKafkaSerdeConfig {
     public static final Integer MAX_SCHEMA_MAP_SIZE_CONFIG_DEFAULT = 1000;
 
 
-    AbstractKafkaSerdeConfig(Map<String, ?> props) {
+    AbstractKafkaSerdeConfig(Map<String, Object> props) {
         this.props = (Map<String, Object>) props;
     }
 
-    public Map<String, ?> getProps() {
+    public Map<String, Object> getProps() {
         return props;
     }
 
