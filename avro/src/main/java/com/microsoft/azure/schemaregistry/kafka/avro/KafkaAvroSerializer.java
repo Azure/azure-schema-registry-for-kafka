@@ -3,13 +3,13 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
-import com.azure.core.credential.TokenCredential;
-import com.azure.data.schemaregistry.AbstractDataSerializer;
-import com.azure.data.schemaregistry.avro.AvroByteEncoder;
-import com.azure.data.schemaregistry.client.CachedSchemaRegistryClientBuilder;
+import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
+import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializer;
+import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializerBuilder;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
 /**
@@ -20,11 +20,10 @@ import java.util.Map;
  *
  * Currently, sending Avro GenericRecords and SpecificRecords is supported.  Avro reflection has been disabled.
  *
- * @see AbstractDataSerializer See abstract parent class for implementation details
  * @see KafkaAvroDeserializer See deserializer class for downstream deserializer implementation
  */
-public class KafkaAvroSerializer extends AbstractDataSerializer
-        implements Serializer<Object> {
+public class KafkaAvroSerializer implements Serializer<Object> {
+    private SchemaRegistryAvroSerializer serializer;
 
     /**
      * Empty constructor for Kafka producer
@@ -44,25 +43,17 @@ public class KafkaAvroSerializer extends AbstractDataSerializer
      */
     @Override
     public void configure(Map<String, ?> props, boolean isKey) {
-        KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig(props);
-        String registryUrl = config.getSchemaRegistryUrl();
-        TokenCredential credential = config.getCredential();
-        Integer maxSchemaMapSize = config.getMaxSchemaMapSize();
+        KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
 
-        CachedSchemaRegistryClientBuilder builder = new CachedSchemaRegistryClientBuilder()
-                .endpoint(registryUrl)
-                .credential(credential);
-
-        if (maxSchemaMapSize != null) {
-            builder.maxSchemaMapSize(maxSchemaMapSize);
-        }
-
-        this.schemaRegistryClient = builder.buildClient();
-
-        this.schemaGroup = config.getSchemaGroup();
-        this.autoRegisterSchemas = config.getAutoRegisterSchemas();
-
-        this.setByteEncoder(new AvroByteEncoder());
+        this.serializer = new SchemaRegistryAvroSerializerBuilder()
+                .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
+                        .endpoint(config.getSchemaRegistryUrl())
+                        .credential(config.getCredential())
+                        .maxCacheSize(config.getMaxSchemaMapSize())
+                        .buildAsyncClient())
+                .schemaGroup(config.getSchemaGroup())
+                .autoRegisterSchema(config.getAutoRegisterSchemas())
+                .buildSerializer();
     }
 
 
@@ -78,7 +69,7 @@ public class KafkaAvroSerializer extends AbstractDataSerializer
      * @throws SerializationException Exception catchable by core Kafka producer code
      */
     @Override
-    public byte[] serialize(String topic, Object record) throws SerializationException {
+    public byte[] serialize(String topic, Object record) {
         // null needs to treated specially since the client most likely just wants to send
         // an individual null value instead of making the subject a null type. Also, null in
         // Kafka has a special meaning for deletion in a topic with the compact retention policy.
@@ -88,12 +79,9 @@ public class KafkaAvroSerializer extends AbstractDataSerializer
             return null;
         }
 
-        try {
-            return serializeImpl(record);
-        } catch (com.azure.data.schemaregistry.SerializationException e) {
-            // convert into kafka exception
-            throw new SerializationException(e.getCause());
-        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        serializer.serialize(out, record);
+        return out.toByteArray();
     }
 
     @Override

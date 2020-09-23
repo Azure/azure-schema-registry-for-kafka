@@ -32,9 +32,7 @@ public final class KafkaAvroSerializerConfig extends AbstractKafkaSerdeConfig {
      */
     public static final String SCHEMA_GROUP_CONFIG = "schema.group";
 
-    public static final String SCHEMA_GROUP_CONFIG_DEFAULT = "$default";
-
-    KafkaAvroSerializerConfig(Map<String, ?> props) {
+    KafkaAvroSerializerConfig(Map<String, Object> props) {
         super(props);
     }
 
@@ -47,9 +45,12 @@ public final class KafkaAvroSerializerConfig extends AbstractKafkaSerdeConfig {
     }
 
     /**
-     * @return schema group, with default group name set to '$default'
+     * @return schema group
      */
     public String getSchemaGroup() {
-        return (String) this.getProps().getOrDefault(SCHEMA_GROUP_CONFIG, SCHEMA_GROUP_CONFIG_DEFAULT);
+        if (!this.getProps().containsKey(SCHEMA_GROUP_CONFIG)) {
+            throw new NullPointerException("Schema group configuration property is required.");
+        }
+        return (String) this.getProps().get(SCHEMA_GROUP_CONFIG);
     }
 }

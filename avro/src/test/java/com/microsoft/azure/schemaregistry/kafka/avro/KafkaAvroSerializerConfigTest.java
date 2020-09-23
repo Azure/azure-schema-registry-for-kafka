@@ -17,8 +17,13 @@ public class KafkaAvroSerializerConfigTest {
     }
 
     @Test
-    public void testGetSchemaGroupDefault() {
+    public void testNoSchemaGroupProvidedThenFail() {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig(Collections.emptyMap());
-        assertEquals(KafkaAvroSerializerConfig.SCHEMA_GROUP_CONFIG_DEFAULT, config.getSchemaGroup());
+        try {
+            config.getSchemaGroup();
+            fail();
+        } catch (NullPointerException e) {
+            assertTrue(true);
+        }
     }
 }
