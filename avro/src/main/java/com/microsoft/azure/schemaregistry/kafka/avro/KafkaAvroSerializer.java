@@ -20,7 +20,6 @@ import java.util.Map;
  *
  * Currently, sending Avro GenericRecords and SpecificRecords is supported.  Avro reflection has been disabled.
  *
- * @see com.azure.data.schemaregistry.SchemaRegistrySerializer See abstract parent class for implementation details
  * @see KafkaAvroDeserializer See deserializer class for downstream deserializer implementation
  */
 public class KafkaAvroSerializer implements Serializer<Object> {
