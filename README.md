@@ -2,7 +2,18 @@
   <img src="event-hubs.png" alt="Microsoft Azure Event Hubs" width="100"/>
 </p>
 
-<h1>Azure Schema Registry for Kafka</h1> 
+<h1>Azure Schema Registry for Kafka [Private Preview]</h1> 
+
+Azure Schema Registry is a hosted schema repository service provided by Azure Event Hubs, designed to simplify schema management and data governance.
+
+Azure Schema Registry provides:
+- Schema versioning and evolution
+- Kafka and AMQP client plugins for serialization and deserialization
+- Role-based access control for schemas and schema groups
+
+If interested in participating in the Schema Registry private preview program, [contact the Schema Registry team](mailto:askEHSchemaRegistry@microsoft.com) for more information.
+
+Sample code can be found in implementation level folders (e.g. [avro](avro/samples))
 
 # Contributing
 
