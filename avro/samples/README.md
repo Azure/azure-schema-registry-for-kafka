@@ -1,4 +1,4 @@
-## [Private Preview] Kafka Avro Integration for Azure Schema Registry
+## [Public Preview] Kafka Avro Integration for Azure Schema Registry
 This document will show how to run Kafka-integrated Apache Avro serializers and deserializers backed by Azure Schema Registry
 
 ## Prerequisites
