@@ -37,6 +37,7 @@ public class KafkaAvroGenericRecord {
         props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, registryUrl);
         props.put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS_CONFIG, true);
         props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_CREDENTIAL_CONFIG, credential);
+        props.put(KafkaAvroSerializerConfig.SCHEMA_GROUP_CONFIG, schemaGroup);
         KafkaProducer<String, GenericRecord> producer = new KafkaProducer<String, GenericRecord>(props);
 
         String key = "key1";
