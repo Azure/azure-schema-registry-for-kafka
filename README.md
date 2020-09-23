@@ -11,9 +11,21 @@ Azure Schema Registry provides:
 - Kafka and AMQP client plugins for serialization and deserialization
 - Role-based access control for schemas and schema groups
 
-If interested in participating in the Schema Registry private preview program, [contact the Schema Registry team](mailto:askEHSchemaRegistry@microsoft.com) for more information.
+An overview of Azure Schema Registry can be found on the [Event Hubs docs page](https://docs.microsoft.com/en-us/azure/event-hubs/schema-registry-overview). 
 
 Sample code can be found in implementation level folders (e.g. [avro](avro/samples))
+
+# Implementations
+
+Each Kafka Schema Registry serializer will be backed by common code hosted in the Azure Central SDK repositories.
+
+Base serialization implementations can be found at the following repository links by language:
+- Java - [azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java/tree/master/sdk/schemaregistry/azure-data-schemaregistry-avro)
+- C# - [azure-sdk-for-dotnet](https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/schemaregistry/Microsoft.Azure.Data.SchemaRegistry.ApacheAvro)
+- Python - [azure-sdk-for-python](https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/schemaregistry/azure-schemaregistry-avroserializer)
+- JS/TS - [azure-sdk-for-js](https://github.com/Azure/azure-sdk-for-js/tree/master/sdk/schemaregistry/schema-registry-avro)
+
+Sample code can be found in the `/samples` directories at the following links.
 
 # Contributing
 
