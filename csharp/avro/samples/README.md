@@ -13,9 +13,11 @@ In addition:
 * [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/)
 * [Git](https://www.git-scm.com/downloads)
 
-## Create an Event Hubs namespace
+## Create an Event Hubs namespace and a schema group
 
 An Event Hubs namespace is required to send or receive from any Event Hubs service. See [Create Kafka-enabled Event Hubs](https://docs.microsoft.com/azure/event-hubs/event-hubs-create-kafka-enabled) for instructions on getting an Event Hubs Kafka endpoint. Make sure to copy the Event Hubs connection string for later use.
+
+Once the namespace is provisioned, head to the Schema Registry tab in the left column and create a schema group.  Schema groups must be created before schemas can be auto-registered.
 
 ### FQDN
 
@@ -39,11 +41,17 @@ cd azure-event-hubs-for-kafka/quickstart/dotnet
 
 Use the NuGet Package Manager UI (or Package Manager Console) to install the Confluent.Kafka package. More detailed instructions can be found [here](https://github.com/confluentinc/confluent-kafka-dotnet#referencing). 
 
-**This tutorial uses Confluent.Kafka v0.11 - using v1.0-beta will cause compilation errors.**
-
 ## Update App.config
 
-Update the values of the `EH_FQDN` and `EH_CONNECTION_STRING` in `App.config` to direct the application to the Event Hubs Kafka endpoint with the correct authentication. Default values for the Event Hub/topic name (`test`) and consumer group (`$Default`) have been filled in, but feel free to change those as needed.
+Update the values in `App.config`:
+- `EH_FQDN` - Event Hub namespace, with port 9093 appended
+- `EH_JAAS_CONFIG` - SASL SSL JAAS config for Kafka client
+- `EH_NAME` - Event Hub name
+- `CONSUMER_GROUP`- Kafka consumer's group name
+- `SCHEMA_REGISTRY_URL` - Event Hub namespace hosting Schema Registry instance
+- `SCHEMA_REGISTRY_TENANT_ID` - Application identity's tenant GUID
+- `SCHEMA_REGISTRY_CLIENT_ID` - Application identity's client GUID
+- `SCHEMA_REGISTRY_CLIENT_SECRET` - Client secret for application identity
 
 ## Run the application
 

@@ -8,10 +8,10 @@ namespace EventHubsForKafkaSample
         public static void Main(string[] args)
         {
             string brokerList = ConfigurationManager.AppSettings["EH_FQDN"];
-            string connectionString = ConfigurationManager.AppSettings["EH_CONNECTION_STRING"];
+            string connectionString = ConfigurationManager.AppSettings["EH_JAAS_CONFIG"];
             string topic = ConfigurationManager.AppSettings["EH_NAME"];
             string caCertLocation = ConfigurationManager.AppSettings["CA_CERT_LOCATION"];
-            string consumerGroup = ConfigurationManager.AppSettings["CONSUMER_GROUP"];
+            string consumerGroup = ConfigurationManager.AppSettings["KAFKA_GROUP"];
 
             Console.WriteLine("Initializing Producer");
             Worker.Producer(brokerList, connectionString, topic, caCertLocation).Wait();
