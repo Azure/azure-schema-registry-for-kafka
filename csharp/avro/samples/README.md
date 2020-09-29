@@ -10,7 +10,7 @@ If you don't have an Azure subscription, create a [free account](https://azure.m
 
 In addition:
 
-* [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/)
+* [Visual Studio](https://visualstudio.microsoft.com/downloads/)
 * [Git](https://www.git-scm.com/downloads)
 
 ## Create an Event Hubs namespace and a schema group
@@ -29,17 +29,11 @@ If your Event Hubs namespace is deployed on a non-Public cloud, your domain name
 
 ## Clone the example project
 
-Now that you have a Kafka-enabled Event Hubs connection string, clone the Azure Event Hubs for Kafka repository and open EventHubsForKafkaSample.sln in VS2017:
-
-```bash
-git clone https://github.com/Azure/azure-event-hubs-for-kafka.git
-cd azure-event-hubs-for-kafka/quickstart/dotnet
-./EventHubsForKafkaSample.sln
-```
+Now that you have a Kafka-enabled Event Hubs connection string, clone the Azure Event Hubs for Kafka repository and open top-level C$# Avro solution file in Visual Studio.
 
 ## Import Confluent's Kafka package
 
-Use the NuGet Package Manager UI (or Package Manager Console) to install the Confluent.Kafka package. More detailed instructions can be found [here](https://github.com/confluentinc/confluent-kafka-dotnet#referencing). 
+Use the NuGet Package Manager UI (or Package Manager Console) with `dotnet restore` to install the Confluent.Kafka package. More detailed instructions can be found [here](https://github.com/confluentinc/confluent-kafka-dotnet#referencing).
 
 ## Update App.config
 
@@ -55,7 +49,7 @@ Update the values in `App.config`:
 
 ## Run the application
 
-Run the application in VS2017 and watch it go! If the Kafka-enabled Event Hub has incoming events, then the consumer should now begin receiving events from the topic set in `App.config`. 
+Run the application in Visual Studio! If the Kafka-enabled Event Hub has incoming events, then the consumer should now begin receiving events from the topic set in `App.config`. 
 
 **NOTE**: Since Kafka's default for an unknown consumer group is to read from the *latest* offset, the first time you run the consumer will not receive any events from this application's producer. This is because the producer sends its messages before the consumer polls in this application. To remedy this, either run the application several times with the same consumer group (so that the consumer group's offset will be known to the broker), set Kafka's [`auto.offset.reset` consumer config](https://kafka.apache.org/documentation/#newconsumerconfigs) to `earliest`, or use an external producer and produce simultaneously.
 
