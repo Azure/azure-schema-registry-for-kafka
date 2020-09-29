@@ -5,3 +5,19 @@ jdk:
 
 script:
     - ./run_tests.sh
+
+matrix:
+  include:
+    - language: java
+      jdk: openjdk8
+      before_install:
+      - chmod +x ./run_java_tests.sh
+      script:
+      - chmod 777 ./run_java_tests.sh
+    - language: csharp
+      mono: none
+      dotnet: 2.1.502
+      before_install:
+      - chmod +x ./run_csharp_tests.sh
+      script:
+      - ./run_csharp_tests.sh
