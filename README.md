@@ -2,7 +2,7 @@
   <img src="event-hubs.png" alt="Microsoft Azure Event Hubs" width="100"/>
 </p>
 
-<h1>Azure Schema Registry for Kafka [Private Preview]</h1> 
+<h1>Azure Schema Registry for Kafka</h1> 
 
 Azure Schema Registry is a hosted schema repository service provided by Azure Event Hubs, designed to simplify schema management and data governance.
 
