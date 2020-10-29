@@ -13,7 +13,7 @@ Azure Schema Registry provides:
 
 An overview of Azure Schema Registry can be found on the [Event Hubs docs page](https://docs.microsoft.com/en-us/azure/event-hubs/schema-registry-overview). 
 
-Sample code can be found in implementation level folders (e.g. [avro](avro/samples))
+Sample code can be found in implementation level folders (e.g. [avro](csharp/avro/samples))
 
 # Implementations
 
