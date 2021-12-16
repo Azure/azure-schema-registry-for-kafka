@@ -16,7 +16,7 @@
   <properties>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
-      <avro.version>1.9.1</avro.version>
+      <avro.version>1.10.0</avro.version>
   </properties>
 
   <dependencies>
@@ -86,13 +86,13 @@
           <goals>
             <goal>schema</goal>
           </goals>
-          <configuration>
-            <sourceDirectory>${project.basedir}/src/main/resources/java/com/azure/schemaregistry/samples</sourceDirectory>
-            <includes>
-              <include>AvroUser.avsc</include>
-            </includes>
-            <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
-          </configuration>
+            <configuration>
+              <sourceDirectory>${project.basedir}/src/main/resources/java/com/azure/schemaregistry/samples</sourceDirectory>
+              <includes>
+                <include>Order.avsc</include>
+              </includes>
+              <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
+            </configuration>
         </execution>
       </executions>
       </plugin>

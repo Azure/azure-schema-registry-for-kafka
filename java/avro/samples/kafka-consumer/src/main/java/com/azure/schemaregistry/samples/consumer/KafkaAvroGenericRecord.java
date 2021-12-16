@@ -1,4 +1,4 @@
-package com.azure.schemaregistry.samples;
+package com.azure.schemaregistry.samples.consumer;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.logging.ClientLogger;
