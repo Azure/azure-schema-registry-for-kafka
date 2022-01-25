@@ -46,9 +46,9 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
 
         this.serializer = new SchemaRegistryAvroSerializerBuilder()
                 .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
-                        .endpoint(config.getSchemaRegistryUrl())
+                        .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
                         .credential(config.getCredential())
-                        .maxCacheSize(config.getMaxSchemaMapSize())
+                        // .maxCacheSize(config.getMaxSchemaMapSize())
                         .buildAsyncClient())
                 .avroSpecificReader(config.getAvroSpecificReader())
                 .buildSerializer();
