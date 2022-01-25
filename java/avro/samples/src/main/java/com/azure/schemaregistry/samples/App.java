@@ -3,6 +3,7 @@ package com.azure.schemaregistry.samples;
 import com.azure.core.credential.TokenCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.identity.ManagedIdentityCredentialBuilder;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 
 import java.io.FileInputStream;
 import java.util.Properties;
@@ -23,7 +24,7 @@ public class App {
         String schemaGroup = props.getProperty("schema.group");
 
         TokenCredential credential;
-        if (props.getProperty("use.managed.identity.credential").equals("true")) {
+        /*if (props.getProperty("use.managed.identity.credential").equals("true")) {
             credential = new ManagedIdentityCredentialBuilder().build();
         } else {
             credential = new ClientSecretCredentialBuilder()
@@ -31,7 +32,8 @@ public class App {
                     .clientId(props.getProperty("client.id"))
                     .clientSecret(props.getProperty("client.secret"))
                     .build();
-        }
+        }*/
+        credential = new DefaultAzureCredentialBuilder().build();
 
         Scanner in = new Scanner(System.in);
 
