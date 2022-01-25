@@ -9,7 +9,7 @@
   <groupId>com.microsoft.azure</groupId>
   <artifactId>azure-schemaregistry-avro-samples</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.0-beta.3</version>
+  <version>1.0.0-beta.4</version>
   <name>azure-schemaregistry-avro-samples</name>
   <url>http://maven.apache.org</url>
 
@@ -50,11 +50,6 @@
       <artifactId>avro</artifactId>
       <version>1.11.0</version>
     </dependency>
-    <!-- <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka_2.12</artifactId>
-      <version>3.1.0</version>
-    </dependency> -->
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-identity</artifactId>
