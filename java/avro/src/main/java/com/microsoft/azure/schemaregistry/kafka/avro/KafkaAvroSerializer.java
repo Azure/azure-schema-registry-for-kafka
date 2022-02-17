@@ -47,9 +47,8 @@ public class KafkaAvroSerializer implements Serializer<Object> {
 
         this.serializer = new SchemaRegistryAvroSerializerBuilder()
                 .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
-                        .endpoint(config.getSchemaRegistryUrl())
+                        .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
                         .credential(config.getCredential())
-                        .maxCacheSize(config.getMaxSchemaMapSize())
                         .buildAsyncClient())
                 .schemaGroup(config.getSchemaGroup())
                 .autoRegisterSchema(config.getAutoRegisterSchemas())

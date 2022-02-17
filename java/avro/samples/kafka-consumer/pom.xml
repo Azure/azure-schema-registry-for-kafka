@@ -9,14 +9,14 @@
   <groupId>com.microsoft.azure</groupId>
   <artifactId>azure-schemaregistry-avro-samples</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.0-beta.3</version>
+  <version>1.0.0-beta.4</version>
   <name>azure-schemaregistry-avro-samples</name>
   <url>http://maven.apache.org</url>
 
   <properties>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
-      <avro.version>1.10.0</avro.version>
+      <avro.version>1.11.0</avro.version>
   </properties>
 
   <dependencies>
@@ -28,37 +28,32 @@
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-core-serializer-avro-apache</artifactId>
-      <version>1.0.0-beta.3</version>
+      <version>1.0.0-beta.19</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>1.7.29</version>
+      <version>1.7.33</version>
     </dependency>
     <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>2.10.2</version>
+        <version>2.13.1</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.11.2</version>
+      <version>2.13.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
-      <version>1.9.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka_2.12</artifactId>
-      <version>2.3.1</version>
+      <version>1.11.0</version>
     </dependency>
     <dependency>
       <groupId>com.azure</groupId>
       <artifactId>azure-identity</artifactId>
-      <version>1.0.6</version>
+      <version>1.4.3</version>
     </dependency>
   </dependencies>
 
