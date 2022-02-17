@@ -1,0 +1,19 @@
+{
+  "namespace": "com.azure.schemaregistry.samples",
+  "type": "record",
+  "name": "Order",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string"
+    },
+    {
+      "name": "amount",
+      "type": "double"
+    },
+    {
+      "name": "description",
+      "type": "string"
+    }
+  ]
+}
