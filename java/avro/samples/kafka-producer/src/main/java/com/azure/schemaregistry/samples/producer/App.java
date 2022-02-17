@@ -1,4 +1,4 @@
-package com.azure.schemaregistry.samples;
+package com.azure.schemaregistry.samples.producer;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
@@ -37,9 +37,7 @@ public class App {
 
         System.out.println("Enter case number:");
         System.out.println("1 - produce Avro SpecificRecords");
-        System.out.println("2 - consume Avro SpecificRecords");
-        System.out.println("3 - produce Avro GenericRecords");
-        System.out.println("4 - consume Avro GenericRecords");
+        System.out.println("2 - produce Avro GenericRecords");
         int caseNum = in.nextInt();
 
         switch (caseNum) {
@@ -47,13 +45,7 @@ public class App {
                 KafkaAvroSpecificRecord.produceSpecificRecords(brokerUrl, registryUrl, jaasConfig, topicName, schemaGroup, credential);
                 break;
             case 2:
-                KafkaAvroSpecificRecord.consumeSpecificRecords(brokerUrl, registryUrl, jaasConfig, topicName, credential);
-                break;
-            case 3:
                 KafkaAvroGenericRecord.produceGenericRecords(brokerUrl, registryUrl, jaasConfig, topicName, schemaGroup, credential);
-                break;
-            case 4:
-                KafkaAvroGenericRecord.consumeGenericRecords(brokerUrl, registryUrl, jaasConfig, topicName, credential);
                 break;
             default:
                 System.out.println("no sample matched");
