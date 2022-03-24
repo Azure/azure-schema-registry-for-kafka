@@ -4,8 +4,8 @@
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
-import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializer;
-import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializerBuilder;
+import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
+import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
@@ -23,7 +23,7 @@ import java.util.Map;
  * @see KafkaAvroDeserializer See deserializer class for downstream deserializer implementation
  */
 public class KafkaAvroSerializer implements Serializer<Object> {
-    private SchemaRegistryAvroSerializer serializer;
+    private SchemaRegistryApacheAvroSerializer serializer;
 
     /**
      * Empty constructor for Kafka producer
@@ -45,7 +45,7 @@ public class KafkaAvroSerializer implements Serializer<Object> {
     public void configure(Map<String, ?> props, boolean isKey) {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
 
-        this.serializer = new SchemaRegistryAvroSerializerBuilder()
+        this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
                 .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
                         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
                         .credential(config.getCredential())

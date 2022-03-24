@@ -3,12 +3,9 @@ package com.azure.schemaregistry.samples.consumer;
 import com.azure.core.credential.TokenCredential;
 import com.azure.schemaregistry.samples.Order;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializerConfig;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializerConfig;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.specific.SpecificData;
 import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
 import com.azure.core.util.logging.ClientLogger;
 
 import java.time.Duration;
@@ -42,7 +39,7 @@ public class KafkaAvroSpecificRecord {
             while (true) {
                 ConsumerRecords<String, Order> records = consumer.poll(Duration.ofMillis(5000));
                 for (ConsumerRecord<String, Order> record : records) {
-                    Order order = record.value();
+                    Order order = (Order) SpecificData.get().deepCopy(Order.SCHEMA$, (GenericRecord) record.value());
                     logger.info("Order received : " + order.toString());
                 }
             }
