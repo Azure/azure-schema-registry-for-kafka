@@ -5,8 +5,8 @@ package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
-import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializer;
-import com.azure.data.schemaregistry.avro.SchemaRegistryAvroSerializerBuilder;
+import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
+import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
 import org.apache.kafka.common.serialization.Deserializer;
 
 import java.io.ByteArrayInputStream;
@@ -23,7 +23,8 @@ import java.util.Map;
  * @see KafkaAvroSerializer See serializer class for upstream serializer implementation
  */
 public class KafkaAvroDeserializer implements Deserializer<Object> {
-    private SchemaRegistryAvroSerializer serializer;
+    private SchemaRegistryApacheAvroSerializer serializer;
+    private KafkaAvroDeserializerConfig config;
 
     /**
      * Empty constructor used by Kafka consumer
@@ -42,15 +43,7 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      * @see KafkaAvroDeserializerConfig Deserializer will use configs found in here and inherited classes.
      */
     public void configure(Map<String, ?> props, boolean isKey) {
-        KafkaAvroDeserializerConfig config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
-
-        this.serializer = new SchemaRegistryAvroSerializerBuilder()
-                .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
-                        .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
-                        .credential(config.getCredential())
-                        .buildAsyncClient())
-                .avroSpecificReader(config.getAvroSpecificReader())
-                .buildSerializer();
+        this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);  
     }
 
     /**
@@ -62,6 +55,15 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
     @Override
     public Object deserialize(String topic, byte[] bytes) {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+
+        this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
+                .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
+                        .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
+                        .credential(this.config.getCredential())
+                        .buildAsyncClient())
+                .avroSpecificReader(this.config.getAvroSpecificReader())
+                .buildSerializer();
+
         return serializer.deserialize(in, TypeReference.createInstance(Object.class));
     }
 
