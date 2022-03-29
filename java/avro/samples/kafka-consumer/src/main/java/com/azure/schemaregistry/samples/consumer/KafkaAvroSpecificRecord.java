@@ -47,7 +47,15 @@ public class KafkaAvroSpecificRecord {
             while (true) {
                 ConsumerRecords<String, Order> records = consumer.poll(Duration.ofMillis(5000));
                 for (ConsumerRecord<String, Order> record : records) {
-                    logger.info("Order received : " + record.value());
+                    /**
+                    * Current workaround for bug in Avro Serializer (https://github.com/Azure/azure-sdk-for-java/issues/27602)
+                    * will produce GenericRecords reguardless of value of KafkaAvroDeserializerConfig.AVRO_SPECIFIC_READER_CONFIG property.
+                    * Bug fixed in serializer beta.11:
+                    * (https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/schemaregistry/azure-data-schemaregistry-apacheavro/CHANGELOG.md)
+                    * Implementation of fix with native SpecificRecord support will be added in future update.
+                    */
+                    Order order = (Order) SpecificData.get().deepCopy(Order.SCHEMA$, (GenericRecord) record.value());
+                    logger.info("Order received : " + order.toString());
                 }
             }
         } finally {
