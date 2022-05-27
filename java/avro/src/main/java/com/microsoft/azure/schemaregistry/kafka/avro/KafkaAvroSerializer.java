@@ -3,13 +3,14 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
+import com.azure.core.experimental.models.MessageWithMetadata;
+import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
-import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
-import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
+import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroEncoder;
+import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroEncoderBuilder;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
 /**
@@ -23,7 +24,7 @@ import java.util.Map;
  * @see KafkaAvroDeserializer See deserializer class for downstream deserializer implementation
  */
 public class KafkaAvroSerializer implements Serializer<Object> {
-    private SchemaRegistryApacheAvroSerializer serializer;
+    private SchemaRegistryApacheAvroEncoder encoder;
 
     /**
      * Empty constructor for Kafka producer
@@ -45,14 +46,14 @@ public class KafkaAvroSerializer implements Serializer<Object> {
     public void configure(Map<String, ?> props, boolean isKey) {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
 
-        this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
+        this.encoder = new SchemaRegistryApacheAvroEncoderBuilder()
                 .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
                         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
                         .credential(config.getCredential())
                         .buildAsyncClient())
                 .schemaGroup(config.getSchemaGroup())
                 .autoRegisterSchema(config.getAutoRegisterSchemas())
-                .buildSerializer();
+                .buildEncoder();
     }
 
 
@@ -78,9 +79,9 @@ public class KafkaAvroSerializer implements Serializer<Object> {
             return null;
         }
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        serializer.serialize(out, record);
-        return out.toByteArray();
+        MessageWithMetadata message =
+                encoder.encodeMessageData(record, TypeReference.createInstance(MessageWithMetadata.class));
+        return message.getBodyAsBinaryData().toBytes();
     }
 
     @Override

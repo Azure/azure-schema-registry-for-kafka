@@ -2,19 +2,19 @@ package com.azure.schemaregistry.samples.producer;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.logging.ClientLogger;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializerConfig;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializerConfig;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import java.time.Duration;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 public class KafkaAvroGenericRecord {
@@ -55,8 +55,12 @@ public class KafkaAvroGenericRecord {
                 avroRecord.put("id", "ID-" + i);
                 avroRecord.put("amount", 20.99 + i);
                 avroRecord.put("description", "Sample order -" + i);
+                // Implementation of getting schema id from service is under development
+                // To deserialize, schema id must be manually added in a Kafka message header as a workaround
+                String schemaId = "{Place Schema Id Here}";
+                List<Header> headers = Arrays.asList(new RecordHeader("SchemaIdBytes", schemaId.getBytes()));
 
-                ProducerRecord<String, GenericRecord> record = new ProducerRecord<String, GenericRecord>(topicName, key, avroRecord);
+                ProducerRecord<String, GenericRecord> record = new ProducerRecord<String, GenericRecord>(topicName, null, key, avroRecord, headers);
                 producer.send(record);
 
                 logger.info("Sent GenericRecord: {}", record);
