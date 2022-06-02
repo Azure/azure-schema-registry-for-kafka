@@ -53,11 +53,10 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      * Deserializes byte array into Java object
      * @param topic topic associated with the record bytes
      * @param bytes serialized bytes, may be null
-     * @param headers record headers, may be null
      * @return deserialize object, may be null
      */
     @Override
-    public Object deserialize(String topic, Headers headers, byte[] bytes) {
+    public Object deserialize(String topic, byte[] bytes) {
         this.encoder = new SchemaRegistryApacheAvroEncoderBuilder()
                 .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
                         .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
@@ -66,12 +65,7 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
                 .avroSpecificReader(this.config.getAvroSpecificReader())
                 .buildEncoder();
 
-        byte[] schemaIdBytes = headers.lastHeader("SchemaIdBytes").value();
-        String schemaIdString = new String(schemaIdBytes);
-        String contentType = "avro/binary+" + schemaIdString;
-
         MessageWithMetadata message = new MessageWithMetadata();
-        message.setContentType(contentType);
         message.setBodyAsBinaryData(BinaryData.fromBytes(bytes));
 
         return encoder.decodeMessageData(message, TypeReference.createInstance(Object.class));
@@ -81,10 +75,12 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      * Deserializes byte array into Java object
      * @param topic topic associated with the record bytes
      * @param bytes serialized bytes, may be null
+     * @param headers record headers, may be null
      * @return deserialize object, may be null
      */
-    public Object deserialize(String topic, byte[] bytes) {
-        return null;
+    @Override
+    public Object deserialize(String topic, Headers headers, byte[] bytes) {
+        return deserialize(topic, bytes);
     }
 
     @Override

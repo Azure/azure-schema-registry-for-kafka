@@ -5,9 +5,14 @@ package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import com.azure.core.experimental.models.MessageWithMetadata;
 import com.azure.core.util.serializer.TypeReference;
+import com.azure.data.schemaregistry.SchemaRegistryAsyncClient;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroEncoder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroEncoderBuilder;
+import com.azure.data.schemaregistry.models.SchemaFormat;
+import com.azure.data.schemaregistry.models.SchemaProperties;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericContainer;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
@@ -24,7 +29,9 @@ import java.util.Map;
  * @see KafkaAvroDeserializer See deserializer class for downstream deserializer implementation
  */
 public class KafkaAvroSerializer implements Serializer<Object> {
+    private SchemaRegistryAsyncClient client;
     private SchemaRegistryApacheAvroEncoder encoder;
+    private String schemaGroupName;
 
     /**
      * Empty constructor for Kafka producer
@@ -46,12 +53,16 @@ public class KafkaAvroSerializer implements Serializer<Object> {
     public void configure(Map<String, ?> props, boolean isKey) {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
 
+        this.schemaGroupName = config.getSchemaGroup();
+
+        this.client = new SchemaRegistryClientBuilder()
+                .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
+                .credential(config.getCredential())
+                .buildAsyncClient();
+
         this.encoder = new SchemaRegistryApacheAvroEncoderBuilder()
-                .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
-                        .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
-                        .credential(config.getCredential())
-                        .buildAsyncClient())
-                .schemaGroup(config.getSchemaGroup())
+                .schemaRegistryAsyncClient(this.client)
+                .schemaGroup(this.schemaGroupName)
                 .autoRegisterSchema(config.getAutoRegisterSchemas())
                 .buildEncoder();
     }
@@ -81,7 +92,33 @@ public class KafkaAvroSerializer implements Serializer<Object> {
 
         MessageWithMetadata message =
                 encoder.encodeMessageData(record, TypeReference.createInstance(MessageWithMetadata.class));
-        return message.getBodyAsBinaryData().toBytes();
+        byte[] messageBodyBytes = message.getBodyAsBinaryData().toBytes();
+
+        // Get schema id via schema body
+        Schema schema = ((GenericContainer) record).getSchema();
+        SchemaProperties properties = this.client.getSchemaProperties(
+                this.schemaGroupName,
+                schema.getFullName(),
+                schema.toString(),
+                SchemaFormat.AVRO
+        ).block();
+        String schemaId = properties.getId();
+        byte[] schemaIdBytes = schemaId.getBytes();
+
+        byte[] schemaFormatBytes = new byte[]{0x00, 0x00, 0x00, 0x00};
+
+        byte[] dataPayload = new byte[schemaFormatBytes.length + schemaIdBytes.length + messageBodyBytes.length];
+        System.arraycopy(schemaFormatBytes, 0, dataPayload, 0, schemaFormatBytes.length);
+        System.arraycopy(schemaIdBytes, 0, dataPayload, schemaFormatBytes.length, schemaIdBytes.length);
+        System.arraycopy(
+                messageBodyBytes,
+                0,
+                dataPayload,
+                schemaFormatBytes.length + schemaIdBytes.length,
+                messageBodyBytes.length
+        );
+
+        return dataPayload;
     }
 
     @Override
