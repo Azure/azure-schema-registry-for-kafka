@@ -103,7 +103,7 @@ namespace EventHubsForKafkaSample
                     try
                     {
                         var msg = consumer.Consume(cts.Token);
-                        Console.WriteLine($"Received: '{msg.Value.InvoiceId}'");
+                        Console.WriteLine($"Received: '{msg.Message.Value.InvoiceId}'");
                     }
                     catch (ConsumeException e)
                     {
