@@ -3,13 +3,15 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
+import com.azure.core.experimental.models.MessageWithMetadata;
+import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
 import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
 /**
@@ -69,6 +71,23 @@ public class KafkaAvroSerializer implements Serializer<Object> {
      */
     @Override
     public byte[] serialize(String topic, Object record) {
+        return null;
+    }
+
+    /**
+     * Serializes GenericRecord or SpecificRecord into a byte array, containing a GUID reference to schema
+     * and the encoded payload.
+     *
+     * Null behavior matches Kafka treatment of null values.
+     *
+     * @param topic Topic destination for record. Required by Kafka serializer interface, currently not used.
+     * @param record Object to be serialized, may be null
+     * @param headers Record headers, may be null
+     * @return byte[] payload for sending to EH Kafka service, may be null
+     * @throws SerializationException Exception catchable by core Kafka producer code
+     */
+    @Override
+    public byte[] serialize(String topic, Headers headers, Object record) {
         // null needs to treated specially since the client most likely just wants to send
         // an individual null value instead of making the subject a null type. Also, null in
         // Kafka has a special meaning for deletion in a topic with the compact retention policy.
@@ -77,10 +96,13 @@ public class KafkaAvroSerializer implements Serializer<Object> {
         if (record == null) {
             return null;
         }
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        serializer.serialize(out, record);
-        return out.toByteArray();
+        
+        MessageWithMetadata message =
+            this.serializer.serializeMessageData(record, TypeReference.createInstance(MessageWithMetadata.class));
+        String messageContentType = message.getContentType();
+        byte[] contentTypeBytes = messageContentType.getBytes();
+        headers.add("Content-Type", contentTypeBytes);
+        return message.getBodyAsBinaryData().toBytes();
     }
 
     @Override

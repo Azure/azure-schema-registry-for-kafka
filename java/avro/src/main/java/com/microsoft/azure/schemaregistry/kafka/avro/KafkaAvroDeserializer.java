@@ -3,13 +3,16 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
+import com.azure.core.experimental.models.MessageWithMetadata;
+import com.azure.core.util.BinaryData;
 import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import java.io.ByteArrayInputStream;
 import java.util.Map;
 
 /**
@@ -43,7 +46,16 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      * @see KafkaAvroDeserializerConfig Deserializer will use configs found in here and inherited classes.
      */
     public void configure(Map<String, ?> props, boolean isKey) {
-        this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);  
+        this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
+
+        this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
+            .schemaRegistryAsyncClient(
+                new SchemaRegistryClientBuilder()
+                    .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
+                    .credential(this.config.getCredential())
+                    .buildAsyncClient())
+            .avroSpecificReader(this.config.getAvroSpecificReader())
+            .buildSerializer();
     }
 
     /**
@@ -54,17 +66,29 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      */
     @Override
     public Object deserialize(String topic, byte[] bytes) {
-        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+        return null;
+    }
 
-        this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
-                .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
-                        .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
-                        .credential(this.config.getCredential())
-                        .buildAsyncClient())
-                .avroSpecificReader(this.config.getAvroSpecificReader())
-                .buildSerializer();
+    /**
+     * Deserializes byte array into Java object
+     * @param topic topic associated with the record bytes
+     * @param bytes serialized bytes, may be null
+     * @param headers record headers, may be null
+     * @return deserialize object, may be null
+     */
+    @Override
+    public Object deserialize(String topic, Headers headers, byte[] bytes) {
+        MessageWithMetadata message = new MessageWithMetadata();
+        message.setBodyAsBinaryData(BinaryData.fromBytes(bytes));
 
-        return serializer.deserialize(in, TypeReference.createInstance(Object.class));
+        Header contentTypeHeader = headers.lastHeader("Content-Type");
+        if (contentTypeHeader != null) {
+            message.setContentType(new String(contentTypeHeader.value()));
+        } else {
+            message.setContentType("");
+        }
+
+        return this.serializer.deserializeMessageData(message, TypeReference.createInstance(Object.class));
     }
 
     @Override
