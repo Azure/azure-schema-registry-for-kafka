@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
                 Data = new BinaryData(data.ToArray()),
             };
 
-            if (context.Headers.TryGetLastBytes("Content-Type", out var headerBytes))
+            if (context.Headers.TryGetLastBytes("content-type", out var headerBytes))
             {
                 content.ContentType = Encoding.UTF8.GetString(headerBytes);
             }
