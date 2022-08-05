@@ -81,7 +81,7 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
         MessageWithMetadata message = new MessageWithMetadata();
         message.setBodyAsBinaryData(BinaryData.fromBytes(bytes));
 
-        Header contentTypeHeader = headers.lastHeader("Content-Type");
+        Header contentTypeHeader = headers.lastHeader("content-type");
         if (contentTypeHeader != null) {
             message.setContentType(new String(contentTypeHeader.value()));
         } else {
