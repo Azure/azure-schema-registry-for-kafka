@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
 
             BinaryContent content = serializer.Serialize<BinaryContent, T>(o);
             var schemaIdBytes = Encoding.UTF8.GetBytes(content.ContentType.ToString());
-            context.Headers.Add("Content-Type", schemaIdBytes);
+            context.Headers.Add("content-type", schemaIdBytes);
             return content.Data.ToArray();
         }
     }
