@@ -101,7 +101,7 @@ public class KafkaAvroSerializer implements Serializer<Object> {
             this.serializer.serializeMessageData(record, TypeReference.createInstance(MessageWithMetadata.class));
         String messageContentType = message.getContentType();
         byte[] contentTypeBytes = messageContentType.getBytes();
-        headers.add("Content-Type", contentTypeBytes);
+        headers.add("content-type", contentTypeBytes);
         return message.getBodyAsBinaryData().toBytes();
     }
 
