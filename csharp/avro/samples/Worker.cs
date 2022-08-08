@@ -89,7 +89,7 @@ namespace EventHubsForKafkaSample
 
             var valueDeserializer = new KafkaAvroDeserializer<CustomerInvoice>(schemaRegistryUrl, credential);
 
-            using (var consumer = new ConsumerBuilder<long, CustomerInvoice>(config).SetKeyDeserializer(Deserializers.Int64).SetValueDeserializer(valueDeserializer).Build())
+            using (var consumer = new ConsumerBuilder<string, CustomerInvoice>(config).SetKeyDeserializer(Deserializers.Utf8).SetValueDeserializer(valueDeserializer).Build())
             {
                 CancellationTokenSource cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
