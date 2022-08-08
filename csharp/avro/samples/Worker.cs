@@ -48,7 +48,7 @@ namespace EventHubsForKafkaSample
                     schemaGroup,
                     autoRegisterSchemas: true);
 
-                using (var producer = new ProducerBuilder<long, CustomerInvoice>(config).SetKeySerializer(Serializers.Int64).SetValueSerializer(valueSerializer).Build())
+                using (var producer = new ProducerBuilder<string, CustomerInvoice>(config).SetKeySerializer(Serializers.Utf8).SetValueSerializer(valueSerializer).Build())
                 {
                     for (int x = 0; x < 10; x++)
                     {
@@ -59,7 +59,7 @@ namespace EventHubsForKafkaSample
                             TransactionValueUsd = 100,
                             UserId = "alice"
                         };
-                        var deliveryReport = await producer.ProduceAsync(topic, new Message<long, CustomerInvoice> { Key = DateTime.UtcNow.Ticks, Value = invoice });
+                        var deliveryReport = await producer.ProduceAsync(topic, new Message<string, CustomerInvoice> { Key = null, Value = invoice });
                     }
                 }
             }
