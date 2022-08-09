@@ -5,9 +5,9 @@
 namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
 {
     using System;
-    using System.IO;
-    using System.Threading;
+    using System.Text;
     using Confluent.Kafka;
+    using global::Azure;
     using global::Azure.Core;
     using global::Azure.Data.SchemaRegistry;
     using Microsoft.Azure.Data.SchemaRegistry.ApacheAvro;
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
     /// <typeparam name="T"></typeparam>
     public class KafkaAvroDeserializer<T> : IDeserializer<T>
     {
-        private readonly SchemaRegistryAvroObjectSerializer serializer;
+        private readonly SchemaRegistryAvroSerializer serializer;
 
         /// <summary>
         /// Constructor for KafkaAvroDeserializer.
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
         /// <param name="credential"></param> TokenCredential implementation for OAuth2 authentication
         public KafkaAvroDeserializer(string schemaRegistryUrl, TokenCredential credential)
         {
-            this.serializer = new SchemaRegistryAvroObjectSerializer(new SchemaRegistryClient(schemaRegistryUrl, credential), "$default");
+            this.serializer = new SchemaRegistryAvroSerializer(new SchemaRegistryClient(schemaRegistryUrl, credential), "$default");
         }
         
         public T Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
@@ -39,7 +39,21 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
                 return default(T);
             }
 
-            return (T) this.serializer.Deserialize(new MemoryStream(data.ToArray()), typeof(T), CancellationToken.None);
+            BinaryContent content = new BinaryContent
+            {
+                Data = new BinaryData(data.ToArray()),
+            };
+
+            if (context.Headers.TryGetLastBytes("content-type", out var headerBytes))
+            {
+                content.ContentType = Encoding.UTF8.GetString(headerBytes);
+            }
+            else
+            {
+                content.ContentType = string.Empty;
+            }
+
+            return serializer.Deserialize<T>(content);
         }
     }
 }

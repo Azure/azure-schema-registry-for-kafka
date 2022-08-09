@@ -48,7 +48,7 @@ namespace EventHubsForKafkaSample
                     schemaGroup,
                     autoRegisterSchemas: true);
 
-                using (var producer = new ProducerBuilder<long, CustomerInvoice>(config).SetKeySerializer(Serializers.Int64).SetValueSerializer(valueSerializer).Build())
+                using (var producer = new ProducerBuilder<string, CustomerInvoice>(config).SetKeySerializer(Serializers.Utf8).SetValueSerializer(valueSerializer).Build())
                 {
                     for (int x = 0; x < 10; x++)
                     {
@@ -59,7 +59,7 @@ namespace EventHubsForKafkaSample
                             TransactionValueUsd = 100,
                             UserId = "alice"
                         };
-                        var deliveryReport = await producer.ProduceAsync(topic, new Message<long, CustomerInvoice> { Key = DateTime.UtcNow.Ticks, Value = invoice });
+                        var deliveryReport = await producer.ProduceAsync(topic, new Message<string, CustomerInvoice> { Key = null, Value = invoice });
                     }
                 }
             }
@@ -89,7 +89,7 @@ namespace EventHubsForKafkaSample
 
             var valueDeserializer = new KafkaAvroDeserializer<CustomerInvoice>(schemaRegistryUrl, credential);
 
-            using (var consumer = new ConsumerBuilder<long, CustomerInvoice>(config).SetKeyDeserializer(Deserializers.Int64).SetValueDeserializer(valueDeserializer).Build())
+            using (var consumer = new ConsumerBuilder<string, CustomerInvoice>(config).SetKeyDeserializer(Deserializers.Utf8).SetValueDeserializer(valueDeserializer).Build())
             {
                 CancellationTokenSource cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
@@ -103,7 +103,7 @@ namespace EventHubsForKafkaSample
                     try
                     {
                         var msg = consumer.Consume(cts.Token);
-                        Console.WriteLine($"Received: '{msg.Value.InvoiceId}'");
+                        Console.WriteLine($"Received: '{msg.Message.Value.InvoiceId}'");
                     }
                     catch (ConsumeException e)
                     {

@@ -7,6 +7,8 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
     using System;
     using System.IO;
     using System.Threading;
+    using System.Text;
+    using global::Azure;
     using global::Azure.Core;
     using global::Azure.Data.SchemaRegistry;
     using Confluent.Kafka;
@@ -20,16 +22,16 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
     /// <typeparam name="T"></typeparam>
     public class KafkaAvroSerializer<T> : ISerializer<T>
     {
-        private readonly SchemaRegistryAvroObjectSerializer serializer;
+        private readonly SchemaRegistryAvroSerializer serializer;
 
         public KafkaAvroSerializer(string schemaRegistryUrl, TokenCredential credential, string schemaGroup, Boolean autoRegisterSchemas = false)
         {
-            this.serializer = new SchemaRegistryAvroObjectSerializer(
+            this.serializer = new SchemaRegistryAvroSerializer(
                 new SchemaRegistryClient(
                     schemaRegistryUrl,
                     credential),
                 schemaGroup,
-                new SchemaRegistryAvroObjectSerializerOptions()
+                new SchemaRegistryAvroSerializerOptions()
                 {
                     AutoRegisterSchemas = autoRegisterSchemas
                 });
@@ -42,11 +44,10 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
                 return null;
             }
 
-            using (var stream = new MemoryStream())
-            {
-                serializer.Serialize(stream, o, typeof(T), CancellationToken.None);
-                return stream.ToArray();
-            }
+            BinaryContent content = serializer.Serialize<BinaryContent, T>(o);
+            var schemaIdBytes = Encoding.UTF8.GetBytes(content.ContentType.ToString());
+            context.Headers.Add("content-type", schemaIdBytes);
+            return content.Data.ToArray();
         }
     }
 }
