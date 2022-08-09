@@ -2,19 +2,15 @@ package com.azure.schemaregistry.samples.producer;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.logging.ClientLogger;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializerConfig;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializerConfig;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import java.time.Duration;
-import java.util.Collections;
 import java.util.Properties;
 
 public class KafkaAvroGenericRecord {
@@ -53,7 +49,7 @@ public class KafkaAvroGenericRecord {
             for (int i = 0; i < 10; i++) {
                 GenericRecord avroRecord = new GenericData.Record(schema);
                 avroRecord.put("id", "ID-" + i);
-                avroRecord.put("amount", 20.99 + i);
+                avroRecord.put("amount", 20.00 + i);
                 avroRecord.put("description", "Sample order -" + i);
 
                 ProducerRecord<String, GenericRecord> record = new ProducerRecord<String, GenericRecord>(topicName, key, avroRecord);

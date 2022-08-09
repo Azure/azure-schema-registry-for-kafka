@@ -2,17 +2,13 @@ package com.azure.schemaregistry.samples.producer;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.schemaregistry.samples.Order;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializerConfig;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializerConfig;
-import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import com.azure.core.util.logging.ClientLogger;
 
-import java.time.Duration;
-import java.util.Collections;
 import java.util.Properties;
 
 public class KafkaAvroSpecificRecord {
@@ -43,7 +39,7 @@ public class KafkaAvroSpecificRecord {
 
         while (true) {
             for (int i = 0; i < 10; i++) {
-                Order order = new Order("ID-" + i, 10.99 + i, "Sample order -" + i);
+                Order order = new Order("ID-" + i, 10.00 + i, "Sample order -" + i);
                 ProducerRecord<String, Order> record = new ProducerRecord<String, Order>(topicName, key, order);
                 producer.send(record);
                 logger.info("Sent Order {}", order);
