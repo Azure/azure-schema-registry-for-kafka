@@ -39,7 +39,7 @@ public class KafkaAvroSpecificRecord {
 
         while (true) {
             for (int i = 0; i < 10; i++) {
-                Order order = new Order("ID-" + i, 10.00 + i, "Sample order -" + i);
+                Order order = new Order("ID-" + i, 10.00 + i, "Sample order " + i);
                 ProducerRecord<String, Order> record = new ProducerRecord<String, Order>(topicName, key, order);
                 producer.send(record);
                 logger.info("Sent Order {}", order);
@@ -53,4 +53,3 @@ public class KafkaAvroSpecificRecord {
         }
     }
 }
-

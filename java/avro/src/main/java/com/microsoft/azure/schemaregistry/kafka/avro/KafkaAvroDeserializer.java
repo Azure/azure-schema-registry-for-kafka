@@ -12,8 +12,9 @@ import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializ
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
-
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Deserializer implementation for Kafka consumer, implementing Kafka Deserializer interface.
@@ -25,15 +26,38 @@ import java.util.Map;
  *
  * @see KafkaAvroSerializer See serializer class for upstream serializer implementation
  */
-public class KafkaAvroDeserializer implements Deserializer<Object> {
+public class KafkaAvroDeserializer<T> implements Deserializer<T> {
     private SchemaRegistryApacheAvroSerializer serializer;
     private KafkaAvroDeserializerConfig config;
+    private Class<T> targetClass;
 
     /**
      * Empty constructor used by Kafka consumer
      */
     public KafkaAvroDeserializer() {
         super();
+    }
+
+    /**
+     * SpecificRecord Constuctor
+     * @param targetClass Class to deserialize into
+     * @param props Properties for config and serializer
+     */
+    public KafkaAvroDeserializer(Class<T> targetClass, Properties props) {
+        super();
+        this.targetClass = targetClass;
+
+        Map<?, ?> propsMap = props;
+        this.config = new KafkaAvroDeserializerConfig(new HashMap<>((Map<String, ?>) propsMap));
+
+        this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
+            .schemaRegistryAsyncClient(
+                new SchemaRegistryClientBuilder()
+                    .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
+                    .credential(this.config.getCredential())
+                    .buildAsyncClient())
+            .avroSpecificReader(this.config.getAvroSpecificReader())
+            .buildSerializer();
     }
 
     /**
@@ -65,7 +89,7 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      * @return deserialize object, may be null
      */
     @Override
-    public Object deserialize(String topic, byte[] bytes) {
+    public T deserialize(String topic, byte[] bytes) {
         return null;
     }
 
@@ -77,7 +101,7 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      * @return deserialize object, may be null
      */
     @Override
-    public Object deserialize(String topic, Headers headers, byte[] bytes) {
+    public T deserialize(String topic, Headers headers, byte[] bytes) {
         MessageWithMetadata message = new MessageWithMetadata();
         message.setBodyAsBinaryData(BinaryData.fromBytes(bytes));
 
@@ -88,7 +112,9 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
             message.setContentType("");
         }
 
-        return this.serializer.deserializeMessageData(message, TypeReference.createInstance(Object.class));
+        // this.targetClass is null when deserializing GenericRecords
+        Class<?> classInstance = this.targetClass == null ? Object.class : this.targetClass;        
+        return (T) this.serializer.deserializeMessageData(message, TypeReference.createInstance(classInstance));
     }
 
     @Override
