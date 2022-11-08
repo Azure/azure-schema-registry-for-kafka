@@ -460,13 +460,3 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
