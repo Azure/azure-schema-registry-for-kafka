@@ -2,11 +2,9 @@ package com.azure.schemaregistry.samples.consumer;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.schemaregistry.samples.Order;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializerConfig;
 import org.apache.kafka.clients.consumer.*;
 import com.azure.core.util.logging.ClientLogger;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -27,21 +25,21 @@ public class KafkaAvroSpecificRecord {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                 com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer.class);
-
+                
+        // Specify class to deserialize record into (defaults to Object.class)
+        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_VALUE_TYPE_CONFIG, Order.class);
         props.put("schema.registry.url", registryUrl);
         props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_CREDENTIAL_CONFIG, credential);
         props.put(KafkaAvroDeserializerConfig.AVRO_SPECIFIC_READER_CONFIG, true);
-
-        // Explicitly define key and value deserializers
-        // Properties must be passed for Consumer and Deserializer separately
-        final KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(props, new StringDeserializer(), new KafkaAvroDeserializer<>(Order.class, props));
+        
+        final KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(topicName));
 
         try {
             while (true) {
                 ConsumerRecords<String, Order> records = consumer.poll(Duration.ofMillis(5000));
                 for (ConsumerRecord<String, Order> record : records) {
-                    logger.info("Order received : " + record.value());
+                    logger.info("Order received: " + record.value());
                 }
             }
         } finally {

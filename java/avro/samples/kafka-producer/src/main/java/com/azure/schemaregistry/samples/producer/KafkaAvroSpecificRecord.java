@@ -37,19 +37,23 @@ public class KafkaAvroSpecificRecord {
 
         String key = "sample-key";
 
-        while (true) {
-            for (int i = 0; i < 10; i++) {
-                Order order = new Order("ID-" + i, 10.00 + i, "Sample order " + i);
-                ProducerRecord<String, Order> record = new ProducerRecord<String, Order>(topicName, key, order);
-                producer.send(record);
-                logger.info("Sent Order {}", order);
+        try {
+            while (true) {
+                for (int i = 0; i < 10; i++) {
+                    Order order = new Order("ID-" + i, 10.00 + i, "Sample order " + i);
+                    ProducerRecord<String, Order> record = new ProducerRecord<String, Order>(topicName, key, order);
+                    producer.send(record);
+                    logger.info("Sent Order {}", order);
+                }
+                producer.flush();
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            producer.flush();
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        } finally {
+            producer.close();
         }
     }
 }
