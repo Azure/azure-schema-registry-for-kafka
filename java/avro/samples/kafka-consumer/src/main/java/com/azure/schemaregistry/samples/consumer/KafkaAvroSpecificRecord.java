@@ -26,11 +26,11 @@ public class KafkaAvroSpecificRecord {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                 com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer.class);
                 
-        // Specify class to deserialize record into (defaults to Object.class)
-        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_VALUE_TYPE_CONFIG, Order.class);
         props.put("schema.registry.url", registryUrl);
         props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_CREDENTIAL_CONFIG, credential);
         props.put(KafkaAvroDeserializerConfig.AVRO_SPECIFIC_READER_CONFIG, true);
+        // Specify class to deserialize record into (defaults to Object.class)
+        props.put(KafkaAvroDeserializerConfig.AVRO_SPECIFIC_VALUE_TYPE_CONFIG, Order.class);
         
         final KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(topicName));

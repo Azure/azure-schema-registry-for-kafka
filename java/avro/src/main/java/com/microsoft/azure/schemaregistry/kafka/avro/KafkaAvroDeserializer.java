@@ -9,6 +9,7 @@ import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
+import org.apache.avro.generic.IndexedRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -24,7 +25,7 @@ import java.util.Map;
  *
  * @see KafkaAvroSerializer See serializer class for upstream serializer implementation
  */
-public class KafkaAvroDeserializer<T> implements Deserializer<T> {
+public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deserializer<T> {
     private SchemaRegistryApacheAvroSerializer serializer;
     private KafkaAvroDeserializerConfig config;
 
