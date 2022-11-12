@@ -19,6 +19,8 @@ public final class KafkaAvroDeserializerConfig extends AbstractKafkaSerdeConfig 
 
     public static final Boolean AVRO_SPECIFIC_READER_CONFIG_DEFAULT = false;
 
+    public static final String AVRO_SPECIFIC_VALUE_TYPE_CONFIG = "specific.avro.value.type";
+
     KafkaAvroDeserializerConfig(Map<String, Object> props) {
         super(props);
     }
@@ -29,5 +31,12 @@ public final class KafkaAvroDeserializerConfig extends AbstractKafkaSerdeConfig 
     public Boolean getAvroSpecificReader() {
         return (Boolean) this.getProps().getOrDefault(
                 AVRO_SPECIFIC_READER_CONFIG, AVRO_SPECIFIC_READER_CONFIG_DEFAULT);
+    }
+
+    /**
+     * @return avro specific class flag, with default set to Object class
+     */
+    public Class<?> getAvroSpecificType() {
+        return (Class<?>) this.getProps().getOrDefault(AVRO_SPECIFIC_VALUE_TYPE_CONFIG, Object.class);
     }
 }

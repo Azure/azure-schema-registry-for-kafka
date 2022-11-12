@@ -24,7 +24,7 @@ import java.util.Map;
  *
  * @see KafkaAvroDeserializer See deserializer class for downstream deserializer implementation
  */
-public class KafkaAvroSerializer implements Serializer<Object> {
+public class KafkaAvroSerializer<T> implements Serializer<T> {
     private SchemaRegistryApacheAvroSerializer serializer;
 
     /**
@@ -70,7 +70,7 @@ public class KafkaAvroSerializer implements Serializer<Object> {
      * @throws SerializationException Exception catchable by core Kafka producer code
      */
     @Override
-    public byte[] serialize(String topic, Object record) {
+    public byte[] serialize(String topic, T record) {
         return null;
     }
 
@@ -87,7 +87,7 @@ public class KafkaAvroSerializer implements Serializer<Object> {
      * @throws SerializationException Exception catchable by core Kafka producer code
      */
     @Override
-    public byte[] serialize(String topic, Headers headers, Object record) {
+    public byte[] serialize(String topic, Headers headers, T record) {
         // null needs to treated specially since the client most likely just wants to send
         // an individual null value instead of making the subject a null type. Also, null in
         // Kafka has a special meaning for deletion in a topic with the compact retention policy.

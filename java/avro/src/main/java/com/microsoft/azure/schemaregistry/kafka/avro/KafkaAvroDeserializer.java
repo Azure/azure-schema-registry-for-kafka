@@ -9,10 +9,10 @@ import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
+import org.apache.avro.generic.IndexedRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
-
 import java.util.Map;
 
 /**
@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @see KafkaAvroSerializer See serializer class for upstream serializer implementation
  */
-public class KafkaAvroDeserializer implements Deserializer<Object> {
+public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deserializer<T> {
     private SchemaRegistryApacheAvroSerializer serializer;
     private KafkaAvroDeserializerConfig config;
 
@@ -65,7 +65,7 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      * @return deserialize object, may be null
      */
     @Override
-    public Object deserialize(String topic, byte[] bytes) {
+    public T deserialize(String topic, byte[] bytes) {
         return null;
     }
 
@@ -77,7 +77,7 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
      * @return deserialize object, may be null
      */
     @Override
-    public Object deserialize(String topic, Headers headers, byte[] bytes) {
+    public T deserialize(String topic, Headers headers, byte[] bytes) {
         MessageWithMetadata message = new MessageWithMetadata();
         message.setBodyAsBinaryData(BinaryData.fromBytes(bytes));
 
@@ -88,7 +88,9 @@ public class KafkaAvroDeserializer implements Deserializer<Object> {
             message.setContentType("");
         }
 
-        return this.serializer.deserializeMessageData(message, TypeReference.createInstance(Object.class));
+        return (T) this.serializer.deserializeMessageData(
+            message,
+            TypeReference.createInstance(this.config.getAvroSpecificType()));
     }
 
     @Override

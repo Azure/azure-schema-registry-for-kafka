@@ -50,7 +50,7 @@ public class KafkaAvroGenericRecord {
                 GenericRecord avroRecord = new GenericData.Record(schema);
                 avroRecord.put("id", "ID-" + i);
                 avroRecord.put("amount", 20.00 + i);
-                avroRecord.put("description", "Sample order -" + i);
+                avroRecord.put("description", "Sample order " + i);
 
                 ProducerRecord<String, GenericRecord> record = new ProducerRecord<String, GenericRecord>(topicName, key, avroRecord);
                 producer.send(record);
@@ -65,6 +65,4 @@ public class KafkaAvroGenericRecord {
             }
         }
     }
-
-
 }

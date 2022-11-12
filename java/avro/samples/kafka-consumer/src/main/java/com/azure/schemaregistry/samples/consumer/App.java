@@ -20,7 +20,6 @@ public class App {
 
         // Schema Registry specific properties
         String registryUrl = props.getProperty("schema.registry.url");
-        String schemaGroup = props.getProperty("schema.group");
 
         TokenCredential credential;
         if (props.getProperty("use.managed.identity.credential").equals("true")) {
@@ -52,4 +51,3 @@ public class App {
         }
     }
 }
-
