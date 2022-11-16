@@ -23,7 +23,7 @@
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-schemaregistry-kafka-avro</artifactId>
-      <version>1.0.0-beta.8</version>
+      <version>1.0.0-beta.9</version>
     </dependency>
     <dependency>
       <groupId>com.azure</groupId>
