@@ -1,4 +1,4 @@
-package com.microsoft;
+package com.microsoft.azure.schemaregistry.kafka.connect.avro;
 
 import java.util.Map;
 import org.apache.avro.Schema.Parser;
@@ -34,6 +34,7 @@ public class AvroConverter implements Converter {
   public AvroConverter() {
   }
 
+  // Public only for testing
   public AvroConverter(SchemaRegistryAsyncClient client) {
     schemaRegistryClient = client;
   }
@@ -58,13 +59,11 @@ public class AvroConverter implements Converter {
     serializer = new SchemaRegistryApacheAvroSerializerBuilder()
     .schemaRegistryAsyncClient(schemaRegistryClient)
     .schemaGroup(this.avroConverterConfig.getSchemaGroup())
-    .autoRegisterSchema(this.avroConverterConfig.getAutoRegisterSchemas())
     .buildSerializer();
 
     deserializer = new SchemaRegistryApacheAvroSerializerBuilder()
     .schemaRegistryAsyncClient(schemaRegistryClient)
     .schemaGroup(this.avroConverterConfig.getSchemaGroup())
-    .autoRegisterSchema(this.avroConverterConfig.getAutoRegisterSchemas())
     .buildSerializer();
   }
 
@@ -129,5 +128,5 @@ public class AvroConverter implements Converter {
     } catch (Exception e) {
       throw e;
     }
-  }  
+  }
 }

@@ -1,7 +1,6 @@
-package com.microsoft;
+package com.microsoft.azure.schemaregistry.kafka.connect.avro;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializer;
 
