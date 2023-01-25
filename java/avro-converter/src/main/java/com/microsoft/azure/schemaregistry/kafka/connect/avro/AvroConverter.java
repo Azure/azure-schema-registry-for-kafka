@@ -117,9 +117,12 @@ public class AvroConverter implements Converter {
         TypeReference.createInstance(this.avroConverterConfig.getAvroSpecificType())
       );
 
-      if (contentTypeString != "") {
-        schemaId = contentTypeString.split("\\+")[1];
-      }
+      String[] splitSchemaId = contentTypeString.split("\\+");
+      if (splitSchemaId.length < 2) {
+        throw new DataException("Failed to prase schema id " + splitSchemaId[0]);
+      }    
+      schemaId = splitSchemaId[1];
+      
       SchemaRegistrySchema srSchema = schemaRegistryClient.getSchema(schemaId).block();
       
       return avroData.toConnectData(new Parser().parse(srSchema.getDefinition()), deserializedMessage);

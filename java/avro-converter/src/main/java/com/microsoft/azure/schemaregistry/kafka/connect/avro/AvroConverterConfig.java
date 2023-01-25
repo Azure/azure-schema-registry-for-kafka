@@ -3,6 +3,7 @@ package com.microsoft.azure.schemaregistry.kafka.connect.avro;
 import java.util.HashMap;
 import java.util.Map;
 import com.azure.core.credential.TokenCredential;
+import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroException;
 
 public class AvroConverterConfig extends AbstractKafkaSerdeConfig {
   public AvroConverterConfig(Map<String, ?> props) {
@@ -76,13 +77,16 @@ class AbstractKafkaSerdeConfig {
    * @return schema group
    */
   public String getSchemaGroup() {
-    if (!this.getProps().containsKey(SCHEMA_GROUP_CONFIG)) {
-        throw new NullPointerException("Schema group configuration property is required.");
-    }
-    return (String) this.getProps().get(SCHEMA_GROUP_CONFIG);
+      if (!this.getProps().containsKey(SCHEMA_GROUP_CONFIG)) {
+          throw new SchemaRegistryApacheAvroException("Schema group configuration property is required.");
+      }
+      return (String) this.getProps().get(SCHEMA_GROUP_CONFIG);
 }
 
   public TokenCredential getCredential() {
+      if (!this.getProps().containsKey(SCHEMA_REGISTRY_CREDENTIAL_CONFIG)) {
+        throw new SchemaRegistryApacheAvroException("Token credential for schema registry not found.");
+      }
       return (TokenCredential) this.props.get(SCHEMA_REGISTRY_CREDENTIAL_CONFIG);
   }
 
@@ -91,6 +95,6 @@ class AbstractKafkaSerdeConfig {
   }
 
   public Class<?> getAvroSpecificType() {
-    return (Class<?>) this.getProps().getOrDefault(AVRO_SPECIFIC_VALUE_TYPE_CONFIG, Object.class);
+      return (Class<?>) this.getProps().getOrDefault(AVRO_SPECIFIC_VALUE_TYPE_CONFIG, Object.class);
   }
 }

@@ -8,6 +8,6 @@ public class AvroSerializerTest {
     @Test
     public void testNullRecordReturnNull() {
         KafkaAvroSerializer serializer = new KafkaAvroSerializer();
-        assertEquals(null, serializer.serialize("dummy-topic", null));
+        assertEquals(null, serializer.serialize("test-topic", null));
     }
 }
