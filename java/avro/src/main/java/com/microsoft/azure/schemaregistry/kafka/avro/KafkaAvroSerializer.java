@@ -3,7 +3,7 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
-import com.azure.core.experimental.models.MessageWithMetadata;
+import com.azure.core.models.MessageContent;
 import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
@@ -48,12 +48,12 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
 
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
-                .schemaRegistryAsyncClient(new SchemaRegistryClientBuilder()
+                .schemaRegistryClient(new SchemaRegistryClientBuilder()
                         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
                         .credential(config.getCredential())
                         .buildAsyncClient())
                 .schemaGroup(config.getSchemaGroup())
-                .autoRegisterSchema(config.getAutoRegisterSchemas())
+                .autoRegisterSchemas(config.getAutoRegisterSchemas())
                 .buildSerializer();
     }
 
@@ -96,12 +96,10 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
         if (record == null) {
             return null;
         }
-        
-        MessageWithMetadata message =
-            this.serializer.serializeMessageData(record, TypeReference.createInstance(MessageWithMetadata.class));
-        String messageContentType = message.getContentType();
-        byte[] contentTypeBytes = messageContentType.getBytes();
-        headers.add("content-type", contentTypeBytes);
+
+        MessageContent message = this.serializer.serialize(record, TypeReference.createInstance(MessageContent.class));
+        byte[] contentTypeHeaderBytes = message.getContentType().getBytes();
+        headers.add("content-type", contentTypeHeaderBytes);
         return message.getBodyAsBinaryData().toBytes();
     }
 
