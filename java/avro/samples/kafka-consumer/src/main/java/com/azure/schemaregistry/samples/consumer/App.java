@@ -23,7 +23,17 @@ public class App {
 
         TokenCredential credential;
         if (props.getProperty("use.managed.identity.credential").equals("true")) {
-            credential = new ManagedIdentityCredentialBuilder().build();
+            if (props.getProperty("managed.identity.clientId") != null) {
+                credential = new ManagedIdentityCredentialBuilder()
+                        .clientId(props.getProperty("managed.identity.clientId"))
+                        .build();
+            } else if (props.getProperty("managed.identity.resourceId") != null) {
+                credential = new ManagedIdentityCredentialBuilder()
+                        .resourceId(props.getProperty("managed.identity.resourceId"))
+                        .build();
+            } else {
+                credential = new ManagedIdentityCredentialBuilder().build();
+            }
         } else {
             credential = new ClientSecretCredentialBuilder()
                     .tenantId(props.getProperty("tenant.id"))
