@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.microsoft.azure</groupId>
+    <artifactId>azure-schemaregistry-kafka</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>azure-schemaregistry-kafka-json</artifactId>
+  <version>1.0.0-beta.1</version>
+  <name>azure-schemaregistry-kafka-json</name>
+
+  <scm>
+    <url>scm:git:https://github.com/Azure/azure-schema-registry-for-kafka</url>
+    <connection>scm:git:git@github.com:Azure/azure-schema-registry-for-kafka.git</connection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
