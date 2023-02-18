@@ -26,10 +26,12 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
     public class KafkaJsonDeserializer<T> : IDeserializer<T>
     {
         readonly SchemaRegistryClient schemaRegistryClient;
+        readonly JsonSerializer serializer;
 
         public KafkaJsonDeserializer(string schemaRegistryUrl, TokenCredential credential)
         {
             this.schemaRegistryClient = new SchemaRegistryClient(schemaRegistryUrl, credential);
+            this.serializer = new JsonSerializer();
         }
 
         public T Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
@@ -64,14 +66,30 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             // uses a older json-schema draft version.
             // When we updated to use the latest Newtonsoft package/draft, this implementation will
             // need to change using the new classes.
-            var schema = JsonSchema.Parse(schemaRegistryData.Definition);
-            var jObject = JObject.Parse(UTF8Encoding.UTF8.GetString(data));
-            if (!jObject.IsValid(schema))
+            using (var stringReader = new StringReader(UTF8Encoding.UTF8.GetString(data)))
             {
-                throw new JsonSerializationException($"Incoming data cannot be deserialized with schema {schemaId}.");
-            }
+                JsonTextReader reader = new JsonTextReader(stringReader);
+                try
+                {
+                    JsonValidatingReader validatingReader = new JsonValidatingReader(reader);
+                    validatingReader.Schema = JsonSchema.Parse(schemaRegistryData.Definition);
 
-            return jObject.ToObject<T>();
+                    IList<string> messages = new List<string>();
+                    validatingReader.ValidationEventHandler += (o, a) => messages.Add(a.Message);
+
+                    T obj = serializer.Deserialize<T>(validatingReader);
+                    if (messages.Count > 0)
+                    {
+                        throw new JsonSerializationException(string.Concat(messages));
+                    }
+
+                    return obj;
+                }
+                finally
+                {
+                    reader.Close();
+                }
+            }
         }
     }
 }
