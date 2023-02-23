@@ -1,8 +1,12 @@
-﻿using System;
-using System.Configuration;
+﻿//------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//------------------------------------------------------------
 
 namespace EventHubsForKafkaSample
 {
+    using System;
+    using System.Configuration;
+
     class Program
     {
         public static void Main(string[] args)
