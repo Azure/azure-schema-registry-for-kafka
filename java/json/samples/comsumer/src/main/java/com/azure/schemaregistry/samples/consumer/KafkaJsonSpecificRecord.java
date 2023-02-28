@@ -29,7 +29,7 @@ public class KafkaJsonSpecificRecord {
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
             StringDeserializer.class);
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-            com.azure.schemaregistry.samples.consumer.KafkaJsonDeserializer.class);
+            com.microsoft.azure.schemaregistry.kafka.json.KafkaJsonDeserializer.class);
 
     // Schema Registry configs
     props.put("schema.registry.url", registryUrl);
@@ -45,8 +45,7 @@ public class KafkaJsonSpecificRecord {
       while (true) {
           ConsumerRecords<String, Order> records = consumer.poll(Duration.ofMillis(5000));
           for (ConsumerRecord<String, Order> record : records) {
-              logger.info("Order received: " + record.value().toString());
-              System.out.println("Order received: " + record.value().toString());
+              logger.info("Order received: " + record.value());
           }
       }
     } finally {

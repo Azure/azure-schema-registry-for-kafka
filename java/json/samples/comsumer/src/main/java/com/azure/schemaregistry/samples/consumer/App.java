@@ -45,7 +45,7 @@ public class App
         Scanner in = new Scanner(System.in);
 
         System.out.println("Enter case number:");
-        System.out.println("1 - consume Avro SpecificRecords");
+        System.out.println("1 - Consume SpecificRecords");
         int caseNum = in.nextInt();
 
         switch (caseNum) {

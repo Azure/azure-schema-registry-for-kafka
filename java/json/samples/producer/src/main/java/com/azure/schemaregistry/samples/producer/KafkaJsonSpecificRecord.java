@@ -25,7 +25,7 @@ public class KafkaJsonSpecificRecord {
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
             StringSerializer.class);
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-            com.azure.schemaregistry.samples.producer.KafkaJsonSerializer.class);
+            com.microsoft.azure.schemaregistry.kafka.json.KafkaJsonSerializer.class);
 
     // Schema Registry configs
     props.put("schema.registry.url", registryUrl);
@@ -40,11 +40,10 @@ public class KafkaJsonSpecificRecord {
     try {
     while (true) {
         for (int i = 0; i < 10; i++) {
-            Order order = new Order("ID-" + i, 0.99 + i, "Sample order #" + Math.abs(new Random().nextInt()));
+            Order order = new Order("ID-" + i, 0.99 + i, "Sample order " + Math.abs(new Random().nextInt()));
             ProducerRecord<String, Order> record = new ProducerRecord<String, Order>(topicName, key, order);
             producer.send(record);
-            logger.info("Sent Order {}", order);
-            System.out.println("Sent Order " + order.getId());
+            logger.info("Sent Order " + order.getId());
         }
         producer.flush();
         try {

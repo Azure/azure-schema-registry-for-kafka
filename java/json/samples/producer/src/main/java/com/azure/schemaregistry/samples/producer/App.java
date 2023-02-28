@@ -28,10 +28,6 @@ public class App
                 credential = new ManagedIdentityCredentialBuilder()
                         .clientId(props.getProperty("managed.identity.clientId"))
                         .build();
-            } else if (props.getProperty("managed.identity.resourceId") != null) {
-                credential = new ManagedIdentityCredentialBuilder()
-                        .resourceId(props.getProperty("managed.identity.resourceId"))
-                        .build();
             } else {
                 credential = new ManagedIdentityCredentialBuilder().build();
             }
@@ -46,7 +42,7 @@ public class App
         Scanner in = new Scanner(System.in);
 
         System.out.println("Enter case number:");
-        System.out.println("1 - produce Avro SpecificRecords");
+        System.out.println("1 - Produce SpecificRecords");
         int caseNum = in.nextInt();
 
         switch (caseNum) {
