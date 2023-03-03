@@ -1,4 +1,4 @@
-//------------------------------------------------------------
+﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
     using Newtonsoft.Json.Linq;
 
     /// <summary>
-    /// Sample implementation of Kafka Json serializaer, wrapping Azure Schema Registry C# implementation.
+    /// Sample implementation of Kafka Json serializer, wrapping Azure Schema Registry C# implementation.
     /// 
     /// This is meant for reference and sample purposes only, do not use this for production.
     /// </summary>
