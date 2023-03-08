@@ -83,13 +83,13 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
             dataObject = (T) mapper.readValue(data, this.config.getJsonSpecificType());
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Error(e);
+            throw new JsonSerializerException("Error deserializing record into object", e);
         }
 
         if (headers.lastHeader("schemaId") != null) {
             schemaId = new String(headers.lastHeader("schemaId").value());
         } else {
-            throw new RuntimeException("Schema Id was not found in record headers.");
+            throw new JsonSerializerException("Schema Id was not found in record headers", null);
         }
         SchemaRegistrySchema schema = this.client.getSchema(schemaId);
 
@@ -100,15 +100,15 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
             node = mapper.readTree(data);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Error(e);
+            throw new JsonSerializerException("Error reading schema from schema registry", e);
         }
         Set<ValidationMessage> errors = jSchema.validate(node);
 
         if (errors.size() == 0) {
             return dataObject;
         } else {
-            throw new RuntimeException(
-              "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()));
+            throw new JsonSerializerException(
+              "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
         }
     }
 

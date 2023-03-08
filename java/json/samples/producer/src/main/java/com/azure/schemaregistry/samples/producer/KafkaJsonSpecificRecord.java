@@ -8,6 +8,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.logging.ClientLogger;
+import com.azure.schemaregistry.samples.CustomerInvoice;
 import com.azure.schemaregistry.samples.Order;
 
 public class KafkaJsonSpecificRecord {
@@ -32,7 +33,7 @@ public class KafkaJsonSpecificRecord {
     props.put("schema.registry.credential", credential);
     props.put("auto.register.schemas", true);
     props.put("schema.group", schemaGroup);
-    KafkaProducer<String, Order> producer = new KafkaProducer<String,Order>(props);
+    KafkaProducer<String, CustomerInvoice> producer = new KafkaProducer<String,CustomerInvoice>(props);
 
     String key = "sample-key";
 
@@ -40,10 +41,10 @@ public class KafkaJsonSpecificRecord {
     try {
     while (true) {
         for (int i = 0; i < 10; i++) {
-            Order order = new Order("ID-" + i, 0.99 + i, "Sample order " + Math.abs(new Random().nextInt()));
-            ProducerRecord<String, Order> record = new ProducerRecord<String, Order>(topicName, key, order);
+            CustomerInvoice invoice = new CustomerInvoice("Invoice " + i, "Merchant Id " + i, i, "User Id " + i);
+            ProducerRecord<String, CustomerInvoice> record = new ProducerRecord<String, CustomerInvoice>(topicName, key, invoice);
             producer.send(record);
-            logger.info("Sent Order " + order.getId());
+            logger.info("Sent Order " + invoice.getInvoiceId());
         }
         producer.flush();
         try {

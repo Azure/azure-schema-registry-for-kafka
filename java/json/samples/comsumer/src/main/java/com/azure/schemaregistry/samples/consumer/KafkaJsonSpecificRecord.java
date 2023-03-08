@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import com.azure.core.credential.TokenCredential;
 import com.azure.core.util.logging.ClientLogger;
+import com.azure.schemaregistry.samples.CustomerInvoice;
 import com.azure.schemaregistry.samples.Order;
 
 public class KafkaJsonSpecificRecord {
@@ -35,17 +36,17 @@ public class KafkaJsonSpecificRecord {
     props.put("schema.registry.url", registryUrl);
     props.put("schema.registry.credential", credential);
     props.put("auto.register.schemas", true);
-    props.put("specific.value.type", Order.class);
+    props.put("specific.value.type", CustomerInvoice.class);
 
-    final KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(props);
+    final KafkaConsumer<String, CustomerInvoice> consumer = new KafkaConsumer<>(props);
     consumer.subscribe(Collections.singletonList(topicName));
 
     try {
       System.out.println("Reading records...");
       while (true) {
-          ConsumerRecords<String, Order> records = consumer.poll(Duration.ofMillis(5000));
-          for (ConsumerRecord<String, Order> record : records) {
-              logger.info("Order received: " + record.value());
+          ConsumerRecords<String, CustomerInvoice> records = consumer.poll(Duration.ofMillis(5000));
+          for (ConsumerRecord<String, CustomerInvoice> record : records) {
+              logger.info("Invoice received: " + record.value());
           }
       }
     } finally {

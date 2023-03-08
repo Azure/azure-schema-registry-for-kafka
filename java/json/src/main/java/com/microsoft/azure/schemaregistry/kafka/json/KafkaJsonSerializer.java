@@ -17,7 +17,6 @@ import com.github.victools.jsonschema.generator.SchemaGenerator;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 import com.github.victools.jsonschema.generator.SchemaVersion;
-
 import java.util.Map;
 
 /**
@@ -66,7 +65,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
      * @param topic Topic destination for record. Required by Kafka serializer interface, currently not used.
      * @param record Object to be serialized, may be null
      * @return byte[] payload for sending to EH Kafka service, may be null
-     * @throws Error Exception catchable by core Kafka producer code
+     * @throws JsonSerializerException Wrapped exception catchable by core Kafka producer code
      */
     @Override
     public byte[] serialize(String topic, T record) {
@@ -83,7 +82,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
      * @param record Object to be serialized, may be null
      * @param headers Record headers, may be null
      * @return byte[] payload for sending to EH Kafka service, may be null
-     * @throws Error Exception catchable by core Kafka producer code
+     * @throws JsonSerializerException Wrapped exception catchable by core Kafka producer code
      */
     @Override
     public byte[] serialize(String topic, Headers headers, T record) {
@@ -98,7 +97,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
             recordBytes = mapper.writeValueAsBytes(record);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            throw new Error(e);
+            throw new JsonSerializerException("Error serializing record into bytes", e);
         }
 
         SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
