@@ -70,6 +70,7 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
      * @param topic topic associated with the record bytes
      * @param headers record headers, may be null
      * @param data serialized bytes, may be null
+     * @throws JsonSerializerException Wrapped exception catchable by core Kafka producer code
      * @return deserialize object, may be null
      */
     @Override

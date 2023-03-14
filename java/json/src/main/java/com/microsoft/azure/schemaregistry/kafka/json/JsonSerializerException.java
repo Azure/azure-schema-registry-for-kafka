@@ -3,10 +3,12 @@
 
 package com.microsoft.azure.schemaregistry.kafka.json;
 
+import org.apache.kafka.common.errors.SerializationException;
+
 /**
  * Custom error class for exceptions thrown in Json serialization/deserialization steps
  */
-public class JsonSerializerException extends RuntimeException {
+public class JsonSerializerException extends SerializationException {
     /**
      * Constructor with message only
      * @param errorMessage Brief explination of exception source.
