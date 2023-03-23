@@ -55,11 +55,11 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             var schemaRegistryData = this.schemaRegistryClient.GetSchema(schemaId).Value;
             if (schemaRegistryData.Properties.Format != SchemaFormat.Json)
             {
-                throw new JsonSerializerException($"Schema id {schemaId} is not of json format. the schema is a {schemaRegistryData.Properties.Format} schema.");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueDeserialization, $"Schema id {schemaId} is not of json format. the schema is a {schemaRegistryData.Properties.Format} schema."));
             }
             else if (string.IsNullOrEmpty(schemaRegistryData.Definition))
             {
-                throw new JsonSerializerException($"Schema id {schemaId} has empty schema.");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueDeserialization, $"Schema id {schemaId} has empty schema."));
             }
 
             // This implementation is actually based on the old Newtonsoft Json implementation which
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
                     T obj = serializer.Deserialize<T>(validatingReader);
                     if (messages.Count > 0)
                     {
-                        throw new JsonSerializerException(string.Concat(messages));
+                        throw new SerializationException(new Error(ErrorCode.Local_ValueDeserialization, string.Concat(messages)));
                     }
 
                     return obj;

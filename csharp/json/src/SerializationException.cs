@@ -4,19 +4,16 @@
 
 namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
 {
+    using Confluent.Kafka;
     using System;
 
-    public class JsonSerializerException : Exception
+    public class SerializationException : KafkaException
     {
-        public JsonSerializerException()
+        public SerializationException(Error error) : base(error)
         {
         }
 
-        public JsonSerializerException(string message) : base(message)
-        {
-        }
-
-        public JsonSerializerException(string message, Exception innerException) : base(message, innerException)
+        public SerializationException(Error error, Exception innerException) : base(error, innerException)
         {
         }
     }

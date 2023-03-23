@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             var jObject = JObject.FromObject(o);
             if (!jObject.IsValid(schema))
             {
-                throw new JsonSerializerException($"Unexpected parsing error when generating scheam from instance.");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueSerialization, $"Unexpected parsing error when generating scheam from instance."));
             }
 
             var schemaJson = schema.ToString();
@@ -62,11 +62,11 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
 
             if (schemaProperties == null)
             {
-                throw new JsonSerializerException("Schema registry client returned null response");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueSerialization, "Schema registry client returned null response"));
             }
             else if (schemaProperties.Format != SchemaFormat.Json)
             {
-                throw new JsonSerializerException($"Schema registered was not json type, it was {schemaProperties.Format}");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueSerialization, $"Schema registered was not json type, it was {schemaProperties.Format}"));
             }
 
             context.Headers.Add("schemaId", UTF8Encoding.UTF8.GetBytes(schemaProperties.Id));
