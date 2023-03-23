@@ -8,12 +8,12 @@ import org.apache.kafka.common.errors.SerializationException;
 /**
  * Custom error class for exceptions thrown in Json serialization/deserialization steps
  */
-public class JsonSerializerException extends SerializationException {
+public class JsonSerializationException extends SerializationException {
     /**
      * Constructor with message only
      * @param errorMessage Brief explination of exception source.
      */
-    public JsonSerializerException(String errorMessage) {
+    public JsonSerializationException(String errorMessage) {
         super(errorMessage);
     }
 
@@ -22,7 +22,7 @@ public class JsonSerializerException extends SerializationException {
      * @param errorMessage Brief explination of exception source.
      * @param err Throwable error object
      */
-    public JsonSerializerException(String errorMessage, Throwable err) {
+    public JsonSerializationException(String errorMessage, Throwable err) {
         super(errorMessage, err);
     }
 }

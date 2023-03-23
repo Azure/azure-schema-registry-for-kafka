@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
+import com.azure.core.util.ClientOptions;
 import com.azure.data.schemaregistry.SchemaRegistryClient;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.models.SchemaRegistrySchema;
@@ -51,6 +52,7 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
         this.client = new SchemaRegistryClientBuilder()
         .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
         .credential(this.config.getCredential())
+        .clientOptions(new ClientOptions().setApplicationId("azsdk-java-KafkaJsonDeserializer/1.0.0-beta.1"))
         .buildClient();
     }
 
@@ -70,7 +72,7 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
      * @param topic topic associated with the record bytes
      * @param headers record headers, may be null
      * @param data serialized bytes, may be null
-     * @throws JsonSerializerException Wrapped exception catchable by core Kafka producer code
+     * @throws JsonSerializationException Wrapped exception catchable by core Kafka producer code
      * @return deserialize object, may be null
      */
     @Override
@@ -78,38 +80,33 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
         T dataObject;
         String schemaId;
 
-        ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.setVisibility(mapper.getVisibilityChecker().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
         try {
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            mapper.setVisibility(mapper.getVisibilityChecker().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
             dataObject = (T) mapper.readValue(data, this.config.getJsonSpecificType());
+
+            if (headers.lastHeader("schemaId") != null) {
+                schemaId = new String(headers.lastHeader("schemaId").value());
+            } else {
+                throw new JsonSerializationException("Schema Id was not found in record headers", null);
+            }
+
+            SchemaRegistrySchema schema = this.client.getSchema(schemaId);
+
+            JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+            JsonSchema jSchema = factory.getSchema(schema.getDefinition());
+            JsonNode node = mapper.readTree(data);
+
+            Set<ValidationMessage> errors = jSchema.validate(node);
+            if (errors.size() == 0) {
+                return dataObject;
+            } else {
+                throw new JsonSerializationException("Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
+            }
+        } catch (JsonSerializationException e) {
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonSerializerException("Error deserializing record into object", e);
-        }
-
-        if (headers.lastHeader("schemaId") != null) {
-            schemaId = new String(headers.lastHeader("schemaId").value());
-        } else {
-            throw new JsonSerializerException("Schema Id was not found in record headers", null);
-        }
-        SchemaRegistrySchema schema = this.client.getSchema(schemaId);
-
-        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
-        JsonSchema jSchema = factory.getSchema(schema.getDefinition());
-        JsonNode node;
-        try {
-            node = mapper.readTree(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JsonSerializerException("Error reading schema from schema registry", e);
-        }
-        Set<ValidationMessage> errors = jSchema.validate(node);
-
-        if (errors.size() == 0) {
-            return dataObject;
-        } else {
-            throw new JsonSerializerException(
-              "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
+            throw new JsonSerializationException("Execption occured during deserialization", e);
         }
     }
 

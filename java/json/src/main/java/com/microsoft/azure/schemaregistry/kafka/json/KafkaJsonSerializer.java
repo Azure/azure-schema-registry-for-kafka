@@ -5,6 +5,7 @@ package com.microsoft.azure.schemaregistry.kafka.json;
 
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
+import com.azure.core.util.ClientOptions;
 import com.azure.data.schemaregistry.SchemaRegistryClient;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.models.SchemaFormat;
@@ -53,6 +54,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
         this.client = new SchemaRegistryClientBuilder()
         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
         .credential(config.getCredential())
+        .clientOptions(new ClientOptions().setApplicationId("azsdk-java-KafkaJsonSerializer/1.0.0-beta.1"))
         .buildClient();
     }
 
@@ -65,7 +67,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
      * @param topic Topic destination for record. Required by Kafka serializer interface, currently not used.
      * @param record Object to be serialized, may be null
      * @return byte[] payload for sending to EH Kafka service, may be null
-     * @throws JsonSerializerException Wrapped exception catchable by core Kafka producer code
+     * @throws JsonSerializationException Wrapped exception catchable by core Kafka producer code
      */
     @Override
     public byte[] serialize(String topic, T record) {
@@ -82,7 +84,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
      * @param record Object to be serialized, may be null
      * @param headers Record headers, may be null
      * @return byte[] payload for sending to EH Kafka service, may be null
-     * @throws JsonSerializerException Wrapped exception catchable by core Kafka producer code
+     * @throws JsonSerializationException Wrapped exception catchable by core Kafka producer code
      */
     @Override
     public byte[] serialize(String topic, Headers headers, T record) {
@@ -91,31 +93,33 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
         }
 
         byte[] recordBytes;
-
-        ObjectMapper mapper = new ObjectMapper();
         try {
+            ObjectMapper mapper = new ObjectMapper();
             recordBytes = mapper.writeValueAsBytes(record);
+
+            SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
+                SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON);
+            SchemaGeneratorConfig config = configBuilder.build();
+            SchemaGenerator generator = new SchemaGenerator(config);
+            JsonNode jsonSchema = generator.generateSchema(record.getClass());
+            String jsonSchemaString = jsonSchema.toString();
+            
+            SchemaProperties schemaProps = this.client.registerSchema(
+                this.schemaGroup,
+                record.getClass().getName(),
+                jsonSchemaString,
+                SchemaFormat.JSON
+            );
+            
+            headers.add("schemaId", schemaProps.getId().getBytes());
+            return recordBytes;
+        } catch (IllegalStateException e) {
+            throw new JsonSerializationException("Error occured while generating schema", e);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new JsonSerializerException("Error serializing record into bytes", e);
+            throw new JsonSerializationException("Error occured while serializing record into bytes", e);
+        } catch (Exception e) {
+            throw new JsonSerializationException("Execption occured during serialization", e);
         }
-
-        SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
-            SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON);
-        SchemaGeneratorConfig config = configBuilder.build();
-        SchemaGenerator generator = new SchemaGenerator(config);
-        JsonNode jsonSchema = generator.generateSchema(record.getClass());
-        String jsonSchemaString = jsonSchema.toString();
-
-        SchemaProperties schemaProps = this.client.registerSchema(
-            this.schemaGroup,
-            record.getClass().getName(),
-            jsonSchemaString,
-            SchemaFormat.JSON
-        );
-
-        headers.add("schemaId", schemaProps.getId().getBytes());
-        return recordBytes;
     }
 
     @Override
