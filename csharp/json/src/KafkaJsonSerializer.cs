@@ -1,4 +1,4 @@
-//------------------------------------------------------------
+﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
     using Newtonsoft.Json.Linq;
 
     /// <summary>
-    /// Sample implementation of Kafka Json serializaer, wrapping Azure Schema Registry C# implementation.
+    /// Sample implementation of Kafka Json serializer, wrapping Azure Schema Registry C# implementation.
     /// 
     /// This is meant for reference and sample purposes only, do not use this for production.
     /// </summary>
@@ -30,7 +30,13 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
 
         public KafkaJsonSerializer(string schemaRegistryUrl, TokenCredential credential, string schemaGroup)
         {
-            this.schemaRegistryClient = new SchemaRegistryClient(schemaRegistryUrl, credential);
+            this.schemaRegistryClient = new SchemaRegistryClient(schemaRegistryUrl, credential, new SchemaRegistryClientOptions
+            {
+                Diagnostics =
+                {
+                    ApplicationId = "azsdk-net-KafkaJsonSerializer/1.0"
+                }
+            });
             this.schemaGroup = schemaGroup;
             this.schemaGenerator = new JsonSchemaGenerator();
         }
@@ -50,7 +56,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             var jObject = JObject.FromObject(o);
             if (!jObject.IsValid(schema))
             {
-                throw new JsonSerializationException($"Unexpected parsing error when generating scheam from instance.");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueSerialization, $"Unexpected parsing error when generating scheam from instance."));
             }
 
             var schemaJson = schema.ToString();
@@ -62,11 +68,11 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
 
             if (schemaProperties == null)
             {
-                throw new JsonSerializationException("Schema registry client returned null response");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueSerialization, "Schema registry client returned null response"));
             }
             else if (schemaProperties.Format != SchemaFormat.Json)
             {
-                throw new JsonSerializationException($"Schema registered was not json type, it was {schemaProperties.Format}");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueSerialization, $"Schema registered was not json type, it was {schemaProperties.Format}"));
             }
 
             context.Headers.Add("schemaId", UTF8Encoding.UTF8.GetBytes(schemaProperties.Id));

@@ -30,7 +30,13 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
 
         public KafkaJsonDeserializer(string schemaRegistryUrl, TokenCredential credential)
         {
-            this.schemaRegistryClient = new SchemaRegistryClient(schemaRegistryUrl, credential);
+            this.schemaRegistryClient = new SchemaRegistryClient(schemaRegistryUrl, credential, new SchemaRegistryClientOptions
+            {
+                Diagnostics =
+                {
+                    ApplicationId = "azsdk-net-KafkaJsonDeserializer/1.0"
+                }
+            });
             this.serializer = new JsonSerializer();
         }
 
@@ -55,11 +61,11 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             var schemaRegistryData = this.schemaRegistryClient.GetSchema(schemaId).Value;
             if (schemaRegistryData.Properties.Format != SchemaFormat.Json)
             {
-                throw new JsonSerializationException($"Schema id {schemaId} is not of json format. the schema is a {schemaRegistryData.Properties.Format} schema.");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueDeserialization, $"Schema id {schemaId} is not of json format. the schema is a {schemaRegistryData.Properties.Format} schema."));
             }
             else if (string.IsNullOrEmpty(schemaRegistryData.Definition))
             {
-                throw new JsonSerializationException($"Schema id {schemaId} has empty schema.");
+                throw new SerializationException(new Error(ErrorCode.Local_ValueDeserialization, $"Schema id {schemaId} has empty schema."));
             }
 
             // This implementation is actually based on the old Newtonsoft Json implementation which
@@ -80,7 +86,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
                     T obj = serializer.Deserialize<T>(validatingReader);
                     if (messages.Count > 0)
                     {
-                        throw new JsonSerializationException(string.Concat(messages));
+                        throw new SerializationException(new Error(ErrorCode.Local_ValueDeserialization, string.Concat(messages)));
                     }
 
                     return obj;
