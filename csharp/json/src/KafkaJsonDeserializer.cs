@@ -30,7 +30,13 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
 
         public KafkaJsonDeserializer(string schemaRegistryUrl, TokenCredential credential)
         {
-            this.schemaRegistryClient = new SchemaRegistryClient(schemaRegistryUrl, credential);
+            this.schemaRegistryClient = new SchemaRegistryClient(schemaRegistryUrl, credential, new SchemaRegistryClientOptions
+            {
+                Diagnostics =
+                {
+                    ApplicationId = "azsdk-net-KafkaJsonDeserializer/1.0"
+                }
+            });
             this.serializer = new JsonSerializer();
         }
 
