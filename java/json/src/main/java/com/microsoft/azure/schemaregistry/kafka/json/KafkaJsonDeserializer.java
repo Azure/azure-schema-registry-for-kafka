@@ -81,7 +81,8 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
         String schemaId;
 
         try {
-            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            ObjectMapper mapper = new ObjectMapper().configure(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             mapper.setVisibility(mapper.getVisibilityChecker().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
             dataObject = (T) mapper.readValue(data, this.config.getJsonSpecificType());
 
@@ -101,7 +102,8 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
             if (errors.size() == 0) {
                 return dataObject;
             } else {
-                throw new JsonSerializationException("Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
+                throw new JsonSerializationException(
+                    "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
             }
         } catch (JsonSerializationException e) {
             throw e;
