@@ -20,6 +20,8 @@ The following Schema Registry configurations are required:
 - `schema.registry.url` - EH namespace with Schema Registry enabled (does not have to be the same as `bootstrap.servers`)
 - `schema.group` - Schema Registry group with serialization type 'Avro' (*must be created before the application runs*)
 - `use.managed.identity.credential` - indicates that MSI credentials should be used, should be used for MSI-enabled VM
+- `managed.identity.clientId` - if specified, will build MSI credential with given client Id
+- `managed.identity.resourceId` - if specified, will build MSI credential with given resource Id
 - `tenant.id` - sets the tenant ID of the application
 - `client.id` - sets the client ID of the application
 - `client.secret` - sets the client secret for authentication

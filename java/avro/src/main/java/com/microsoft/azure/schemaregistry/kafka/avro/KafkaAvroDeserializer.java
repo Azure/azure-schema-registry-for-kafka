@@ -3,7 +3,7 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
-import com.azure.core.experimental.models.MessageWithMetadata;
+import com.azure.core.models.MessageContent;
 import com.azure.core.util.BinaryData;
 import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
@@ -49,7 +49,7 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
         this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
 
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
-            .schemaRegistryAsyncClient(
+            .schemaRegistryClient(
                 new SchemaRegistryClientBuilder()
                     .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
                     .credential(this.config.getCredential())
@@ -78,7 +78,7 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
      */
     @Override
     public T deserialize(String topic, Headers headers, byte[] bytes) {
-        MessageWithMetadata message = new MessageWithMetadata();
+        MessageContent message = new MessageContent();
         message.setBodyAsBinaryData(BinaryData.fromBytes(bytes));
 
         Header contentTypeHeader = headers.lastHeader("content-type");
@@ -88,9 +88,9 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
             message.setContentType("");
         }
 
-        return (T) this.serializer.deserializeMessageData(
-            message,
-            TypeReference.createInstance(this.config.getAvroSpecificType()));
+        return (T) this.serializer.deserialize(
+                message,
+                TypeReference.createInstance(this.config.getAvroSpecificType()));
     }
 
     @Override
