@@ -52,7 +52,7 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
         this.client = new SchemaRegistryClientBuilder()
         .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
         .credential(this.config.getCredential())
-        .clientOptions(new ClientOptions().setApplicationId("azsdk-java-KafkaJsonDeserializer/1.0.0-beta.1"))
+        .clientOptions(new ClientOptions().setApplicationId("KafkaJsonDeserializer/1.0"))
         .buildClient();
     }
 
