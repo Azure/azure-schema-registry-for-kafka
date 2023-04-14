@@ -19,20 +19,14 @@ import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializ
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
 import com.azure.data.schemaregistry.models.SchemaRegistrySchema;
 import com.azure.identity.ClientSecretCredentialBuilder;
-import io.confluent.connect.avro.AvroData;
-import io.confluent.connect.avro.AvroDataConfig;
-import io.confluent.kafka.serializers.NonRecordContainer;
 
 public class AvroConverter implements Converter {
   private SchemaRegistryAsyncClient schemaRegistryClient;
   private SchemaRegistryApacheAvroSerializer serializer;
   private SchemaRegistryApacheAvroSerializer deserializer;
-
-  private AvroData avroData;
   private AvroConverterConfig avroConverterConfig;
 
-  public AvroConverter() {
-  }
+  public AvroConverter() {}
 
   // Public only for testing
   public AvroConverter(SchemaRegistryAsyncClient client) {
@@ -41,30 +35,26 @@ public class AvroConverter implements Converter {
 
   public void configure(Map<String, ?> configs, boolean isKey) {
     this.avroConverterConfig = new AvroConverterConfig(configs);
-    this.avroData = new AvroData(new AvroDataConfig(configs));
 
     TokenCredential tokenCredential = new ClientSecretCredentialBuilder()
-      .tenantId((String) this.avroConverterConfig.getProps().get("tenant.id"))
-      .clientId((String) this.avroConverterConfig.getProps().get("client.id"))
-      .clientSecret((String) this.avroConverterConfig.getProps().get("client.secret"))
-      .build();
+            .tenantId((String) this.avroConverterConfig.getProps().get("tenant.id"))
+            .clientId((String) this.avroConverterConfig.getProps().get("client.id"))
+            .clientSecret((String) this.avroConverterConfig.getProps().get("client.secret")).build();
 
     if (schemaRegistryClient == null) {
       schemaRegistryClient = new SchemaRegistryClientBuilder()
-      .fullyQualifiedNamespace(this.avroConverterConfig.getSchemaRegistryUrl())
-      .credential(tokenCredential)
-      .buildAsyncClient();
+              .fullyQualifiedNamespace(this.avroConverterConfig.getSchemaRegistryUrl())
+              .credential(tokenCredential).buildAsyncClient();
     }
 
     serializer = new SchemaRegistryApacheAvroSerializerBuilder()
-    .schemaRegistryAsyncClient(schemaRegistryClient)
-    .schemaGroup(this.avroConverterConfig.getSchemaGroup())
-    .buildSerializer();
+            .schemaRegistryAsyncClient(schemaRegistryClient)
+            .schemaGroup(this.avroConverterConfig.getSchemaGroup()).autoRegisterSchema(true)
+            .buildSerializer();
 
     deserializer = new SchemaRegistryApacheAvroSerializerBuilder()
-    .schemaRegistryAsyncClient(schemaRegistryClient)
-    .schemaGroup(this.avroConverterConfig.getSchemaGroup())
-    .buildSerializer();
+            .schemaRegistryAsyncClient(schemaRegistryClient)
+            .schemaGroup(this.avroConverterConfig.getSchemaGroup()).buildSerializer();
   }
 
   public byte[] fromConnectData(String topics, Schema schema, Object value) {
@@ -72,20 +62,19 @@ public class AvroConverter implements Converter {
   }
 
   public byte[] fromConnectData(String topics, Headers headers, Schema schema, Object value) {
-    Object avroObject = avroData.fromConnectData(schema, value);
-    Object avroValue = avroObject instanceof NonRecordContainer
-          ? ((NonRecordContainer) avroObject).getValue()
-          : avroObject;
-    
+    AvroConverterUtils utils = new AvroConverterUtils();
+    Object avroValue =
+            utils.fromConnectData(schema, utils.fromConnectSchema(schema, false), value, false);
+
+    // Convert Connect schema and object to normal Avro object
+
     try {
-      MessageWithMetadata message = serializer.serializeMessageData(
-        avroValue,
-        TypeReference.createInstance(MessageWithMetadata.class)
-      );
+      MessageWithMetadata message = serializer.serializeMessageData(avroValue,
+              TypeReference.createInstance(MessageWithMetadata.class));
 
       byte[] contentTypeBytes = message.getContentType().getBytes();
       headers.add("content-type", contentTypeBytes);
-      
+
       return message.getBodyAsBinaryData().toBytes();
     } catch (SchemaRegistryApacheAvroException e) {
       throw new DataException("Failed to serialize Avro data: ", e);
@@ -111,21 +100,23 @@ public class AvroConverter implements Converter {
         contentTypeString = new String(contentTypeHeader.value());
         message.setContentType(contentTypeString);
       }
-      
-      Object deserializedMessage = deserializer.deserializeMessageData(
-        message,
-        TypeReference.createInstance(this.avroConverterConfig.getAvroSpecificType())
-      );
+
+      Object deserializedMessage = deserializer.deserializeMessageData(message,
+              TypeReference.createInstance(this.avroConverterConfig.getAvroSpecificType()));
+
 
       String[] splitSchemaId = contentTypeString.split("\\+");
       if (splitSchemaId.length < 2) {
         throw new DataException("Failed to prase schema id " + splitSchemaId[0]);
-      }    
+      }
       schemaId = splitSchemaId[1];
-      
+
       SchemaRegistrySchema srSchema = schemaRegistryClient.getSchema(schemaId).block();
-      
-      return avroData.toConnectData(new Parser().parse(srSchema.getDefinition()), deserializedMessage);
+
+      // Convert Avro object to Connect SchemaAndValue
+
+      AvroConverterUtils utils = new AvroConverterUtils();
+      return utils.toConnectData(new Parser().parse(srSchema.getDefinition()), deserializedMessage);
     } catch (SchemaRegistryApacheAvroException e) {
       throw new DataException("Failed to deserialize Avro data: ", e);
     } catch (Exception e) {
