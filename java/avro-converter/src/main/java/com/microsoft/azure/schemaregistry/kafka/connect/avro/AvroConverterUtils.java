@@ -290,8 +290,9 @@ public class AvroConverterUtils {
                     } else if (value instanceof GenericFixed) {
                         converted = ByteBuffer.wrap(((GenericFixed) value).bytes());
                     } else {
-                        throw new DataException("Invalid class for bytes type, expecting byte[] or ByteBuffer "
-                                + "but found " + value.getClass());
+                        throw new DataException(
+                                "Invalid class for bytes type, expecting byte[] or ByteBuffer, got "
+                                        + value.getClass());
                     }
                     break;
                 case ARRAY: {

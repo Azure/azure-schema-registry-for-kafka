@@ -1,6 +1,8 @@
 package com.microsoft.azure.schemaregistry.kafka.connect.avro;
 
 import java.util.Map;
+
+import com.azure.core.util.ClientOptions;
 import org.apache.avro.Schema.Parser;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
@@ -44,7 +46,9 @@ public class AvroConverter implements Converter {
     if (schemaRegistryClient == null) {
       schemaRegistryClient = new SchemaRegistryClientBuilder()
               .fullyQualifiedNamespace(this.avroConverterConfig.getSchemaRegistryUrl())
-              .credential(tokenCredential).buildAsyncClient();
+              .credential(tokenCredential)
+              .clientOptions(new ClientOptions().setApplicationId("KafkaConnectAvro/1.0"))
+              .buildAsyncClient();
     }
 
     serializer = new SchemaRegistryApacheAvroSerializerBuilder()
