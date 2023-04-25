@@ -1,21 +1,35 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) Microsoft Corporation. All rights reserved.
+  ~ Licensed under the MIT License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.microsoft.azure.schemaregistry.kafka.connect.avro</groupId>
-    <artifactId>SchemaRegistryAvroConverter</artifactId>
-    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>com.microsoft.azure</groupId>
+        <artifactId>azure-schemaregistry-kafka</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>azure-schemaregistry-kafka-connect-avro</artifactId>
     <version>1.0.0-beta.1</version>
-    <name>SchemaRegistryAvroConverter</name>
+    <name>azure-schemaregistry-kafka-connect-avro</name>
+    <packaging>jar</packaging>
+
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
-    <repositories>
-        <repository>
-            <id>confluent</id>
-            <url>https://packages.confluent.io/maven/</url>
-        </repository>
-    </repositories>
+
+    <scm>
+        <url>scm:git:https://github.com/Azure/azure-schema-registry-for-kafka</url>
+        <connection>scm:git:git@github.com:Azure/azure-schema-registry-for-kafka.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
