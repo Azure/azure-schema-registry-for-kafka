@@ -11,6 +11,7 @@
     <modules>
         <module>avro</module>
         <module>json</module>
+        <module>avro-converter</module>
     </modules>
 
     <properties>
