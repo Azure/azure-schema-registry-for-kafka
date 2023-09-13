@@ -26,17 +26,19 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
     {
         readonly JsonSchemaGenerator schemaGenerator;
         readonly SchemaRegistryClient schemaRegistryClient;
+        readonly bool autoRegisterSchemas;
         readonly string schemaGroup;
 
-        public KafkaJsonSerializer(string schemaRegistryUrl, TokenCredential credential, string schemaGroup)
+        public KafkaJsonSerializer(string schemaRegistryUrl, TokenCredential credential, string schemaGroup, bool autoRegisterSchemas = false)
         {
             this.schemaRegistryClient = new SchemaRegistryClient(schemaRegistryUrl, credential, new SchemaRegistryClientOptions
             {
                 Diagnostics =
                 {
-                    ApplicationId = "azsdk-net-KafkaJsonSerializer/1.0"
+                    ApplicationId = "KafkaJsonSerializer/1.0"
                 }
             });
+            this.autoRegisterSchemas = autoRegisterSchemas;
             this.schemaGroup = schemaGroup;
             this.schemaGenerator = new JsonSchemaGenerator();
         }
@@ -60,11 +62,23 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             }
 
             var schemaJson = schema.ToString();
-            var schemaProperties = this.schemaRegistryClient.RegisterSchema(
-                this.schemaGroup,
-                typeof(T).FullName,
-                schemaJson,
-                SchemaFormat.Json).Value;
+            SchemaProperties schemaProperties;
+            if (this.autoRegisterSchemas)
+            {
+                schemaProperties = this.schemaRegistryClient.RegisterSchema(
+                    this.schemaGroup,
+                    typeof(T).FullName,
+                    schemaJson,
+                    SchemaFormat.Json).Value;
+            }
+            else
+            {
+                schemaProperties = this.schemaRegistryClient.GetSchemaProperties(
+                    this.schemaGroup,
+                    typeof(T).FullName,
+                    schemaJson,
+                    SchemaFormat.Json).Value;
+            }
 
             if (schemaProperties == null)
             {
