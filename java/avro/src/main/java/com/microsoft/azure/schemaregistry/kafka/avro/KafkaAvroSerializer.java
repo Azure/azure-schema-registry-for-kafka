@@ -4,6 +4,7 @@
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import com.azure.core.models.MessageContent;
+import com.azure.core.util.ClientOptions;
 import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
@@ -51,6 +52,7 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
                 .schemaRegistryClient(new SchemaRegistryClientBuilder()
                         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
                         .credential(config.getCredential())
+                        .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-ser-1.0"))
                         .buildAsyncClient())
                 .schemaGroup(config.getSchemaGroup())
                 .autoRegisterSchemas(config.getAutoRegisterSchemas())

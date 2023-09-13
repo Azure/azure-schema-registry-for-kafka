@@ -29,7 +29,18 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
         /// <param name="credential"></param> TokenCredential implementation for OAuth2 authentication
         public KafkaAvroDeserializer(string schemaRegistryUrl, TokenCredential credential)
         {
-            this.serializer = new SchemaRegistryAvroSerializer(new SchemaRegistryClient(schemaRegistryUrl, credential), "$default");
+            this.serializer = new SchemaRegistryAvroSerializer(
+                new SchemaRegistryClient(
+                    schemaRegistryUrl,
+                    credential, 
+                    new SchemaRegistryClientOptions
+                        {
+                            Diagnostics =
+                            {
+                                ApplicationId = "net-avro-kafka-des-1.0"
+                            }
+                        }),
+                "$default");
         }
         
         public T Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)

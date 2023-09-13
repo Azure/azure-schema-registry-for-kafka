@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             {
                 Diagnostics =
                 {
-                    ApplicationId = "KafkaJsonSerializer/1.0"
+                    ApplicationId = "net-json-kafka-des-1.0"
                 }
             });
             this.serializer = new JsonSerializer();

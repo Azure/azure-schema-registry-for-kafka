@@ -29,7 +29,14 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
             this.serializer = new SchemaRegistryAvroSerializer(
                 new SchemaRegistryClient(
                     schemaRegistryUrl,
-                    credential),
+                    credential,
+                    new SchemaRegistryClientOptions
+                    {
+                        Diagnostics =
+                        {
+                            ApplicationId = "net-avro-kafka-ser-1.0"
+                        }
+                    }),
                 schemaGroup,
                 new SchemaRegistryAvroSerializerOptions()
                 {
