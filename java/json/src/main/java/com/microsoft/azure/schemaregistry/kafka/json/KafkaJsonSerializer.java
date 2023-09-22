@@ -28,6 +28,7 @@ import java.util.Map;
 public class KafkaJsonSerializer<T> implements Serializer<T> {
     private SchemaRegistryClient client;
     private String schemaGroup;
+    private Boolean autoRegisterSchemas;
 
   /**
    * Empty constructor for Kafka producer
@@ -49,12 +50,13 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
     public void configure(Map<String, ?> props, boolean isKey) {
         KafkaJsonSerializerConfig config = new KafkaJsonSerializerConfig((Map<String, Object>) props);
 
+        this.autoRegisterSchemas = config.getAutoRegisterSchemas();
         this.schemaGroup = config.getSchemaGroup();
         
         this.client = new SchemaRegistryClientBuilder()
         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
         .credential(config.getCredential())
-        .clientOptions(new ClientOptions().setApplicationId("KafkaJsonSerializer/1.0"))
+        .clientOptions(new ClientOptions().setApplicationId("java-json-kafka-ser-1.0"))
         .buildClient();
     }
 
@@ -93,6 +95,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
         }
 
         byte[] recordBytes;
+        SchemaProperties schemaProps;
         try {
             ObjectMapper mapper = new ObjectMapper();
             recordBytes = mapper.writeValueAsBytes(record);
@@ -103,14 +106,21 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
             SchemaGenerator generator = new SchemaGenerator(config);
             JsonNode jsonSchema = generator.generateSchema(record.getClass());
             String jsonSchemaString = jsonSchema.toString();
-            
-            SchemaProperties schemaProps = this.client.registerSchema(
-                this.schemaGroup,
-                record.getClass().getName(),
-                jsonSchemaString,
-                SchemaFormat.JSON
-            );
-            
+
+            if (this.autoRegisterSchemas) {
+                schemaProps = this.client.registerSchema(
+                    this.schemaGroup,
+                    record.getClass().getName(),
+                    jsonSchemaString,
+                    SchemaFormat.JSON);
+            } else {
+                schemaProps = this.client.getSchemaProperties(
+                    this.schemaGroup,
+                    record.getClass().getName(),
+                    jsonSchemaString,
+                    SchemaFormat.JSON);
+            }
+                        
             headers.add("schemaId", schemaProps.getId().getBytes());
             return recordBytes;
         } catch (IllegalStateException e) {

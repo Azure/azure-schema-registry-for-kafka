@@ -5,6 +5,7 @@ package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import com.azure.core.models.MessageContent;
 import com.azure.core.util.BinaryData;
+import com.azure.core.util.ClientOptions;
 import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
@@ -53,6 +54,7 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
                 new SchemaRegistryClientBuilder()
                     .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
                     .credential(this.config.getCredential())
+                    .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
                     .buildAsyncClient())
             .avroSpecificReader(this.config.getAvroSpecificReader())
             .buildSerializer();

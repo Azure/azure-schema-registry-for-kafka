@@ -44,7 +44,8 @@ namespace EventHubsForKafkaSample
                 var valueSerializer = new KafkaJsonSerializer<CustomerInvoice>(
                     schemaRegistryUrl, 
                     credential,
-                    schemaGroup);
+                    schemaGroup,
+                    autoRegisterSchemas: true);
 
                 using (var producer = new ProducerBuilder<string, CustomerInvoice>(config).SetKeySerializer(Serializers.Utf8).SetValueSerializer(valueSerializer).Build())
                 {
