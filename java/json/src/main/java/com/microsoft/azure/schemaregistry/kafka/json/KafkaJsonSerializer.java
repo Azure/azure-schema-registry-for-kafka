@@ -55,7 +55,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
         
         this.client = new SchemaRegistryClientBuilder()
         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
-        .credential(config.getCredential())
+        .credential(config.getCredentialOrCreateDefaultAzureCredential())
         .clientOptions(new ClientOptions().setApplicationId("java-json-kafka-ser-1.0"))
         .buildClient();
     }

@@ -5,6 +5,7 @@ package com.microsoft.azure.schemaregistry.kafka.json;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.data.schemaregistry.SchemaRegistryClient;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 
 import java.util.Map;
 
@@ -52,6 +53,15 @@ class AbstractKafkaSerdeConfig {
 
     public TokenCredential getCredential() {
         return (TokenCredential) this.props.get(SCHEMA_REGISTRY_CREDENTIAL_CONFIG);
+    }
+
+    public TokenCredential getCredentialOrCreateDefaultAzureCredential() {
+        TokenCredential credential = getCredential();
+        if (credential != null) {
+            return credential;
+        } else {
+            return new DefaultAzureCredentialBuilder().build();
+        }
     }
 
     public Integer getMaxSchemaMapSize() {

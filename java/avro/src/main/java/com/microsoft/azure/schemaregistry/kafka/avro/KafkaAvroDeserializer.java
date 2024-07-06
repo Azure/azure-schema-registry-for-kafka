@@ -53,7 +53,7 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
             .schemaRegistryClient(
                 new SchemaRegistryClientBuilder()
                     .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
-                    .credential(this.config.getCredential())
+                    .credential(this.config.getCredentialOrCreateDefaultAzureCredential())
                     .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
                     .buildAsyncClient())
             .avroSpecificReader(this.config.getAvroSpecificReader())

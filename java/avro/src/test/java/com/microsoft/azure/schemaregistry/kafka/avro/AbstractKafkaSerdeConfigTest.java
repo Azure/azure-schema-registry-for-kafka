@@ -4,9 +4,11 @@
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
 import com.azure.core.credential.TokenCredential;
+import com.azure.identity.DefaultAzureCredential;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,5 +33,11 @@ public class AbstractKafkaSerdeConfigTest {
         AbstractKafkaSerdeConfig config = new KafkaAvroSerializerConfig(
                 Collections.singletonMap(AbstractKafkaSerdeConfig.SCHEMA_REGISTRY_CREDENTIAL_CONFIG, dummyCredential));
         assertEquals(dummyCredential, config.getCredential());
+    }
+
+    @Test
+    public void testDefaultAzureCredentialUsedWhenCredentialNotConfigured() {
+        AbstractKafkaSerdeConfig config = new KafkaAvroSerializerConfig(new HashMap<>());
+        assertEquals(DefaultAzureCredential.class, config.getCredentialOrCreateDefaultAzureCredential().getClass());
     }
 }

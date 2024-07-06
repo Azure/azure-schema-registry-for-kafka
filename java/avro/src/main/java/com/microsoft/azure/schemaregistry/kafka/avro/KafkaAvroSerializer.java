@@ -51,7 +51,7 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
                 .schemaRegistryClient(new SchemaRegistryClientBuilder()
                         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
-                        .credential(config.getCredential())
+                        .credential(config.getCredentialOrCreateDefaultAzureCredential())
                         .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-ser-1.0"))
                         .buildAsyncClient())
                 .schemaGroup(config.getSchemaGroup())
