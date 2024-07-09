@@ -69,6 +69,8 @@ mvn generate-sources
 ```
 The generated class can be found in the `target/generated-sources` folder.
 Then you can update your producer or consumer application as needed by using the generated types. 
+### A Note on Generated Schemas
+After generating sources in the previous step, the generated type class contains copy of the schema that the class was generated from, typically stored as a static variable named `SCHEMA$`. In some occasions, the Avro Maven Plugin creates a version of this schema that is optimized for class creation, but changes the body of the schema by doing so. This can cause a conflict when running the serializer using a schema that was previously registered to create this class; because the two schemas are different after the Maven Plugin optimizes it, the service will not be able to find the schema being used in serialization and the application will fail. To avoid this, generate the sources and use the schema string that the Maven plugin creates as the schema that is registered in the service. This will ensure that the services uses what is used by the client application and avoid this potential pitfall.
 
 
 ### Running the Kafka Producer 
