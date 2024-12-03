@@ -53,6 +53,11 @@
       <artifactId>azure-data-schemaregistry</artifactId>
       <version>1.4.0-beta.1</version>
     </dependency>
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-identity</artifactId>
+      <version>1.14.2</version>
+    </dependency>
 
     <!-- test dependencies -->
     <dependency>
