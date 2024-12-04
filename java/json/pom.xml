@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>azure-schemaregistry-kafka-json</artifactId>
-  <version>1.0.0-beta.2</version>
+  <version>1.0.0-beta.3</version>
   <name>azure-schemaregistry-kafka-json</name>
 
   <scm>
@@ -59,6 +59,11 @@
       <groupId>com.networknt</groupId>
       <artifactId>json-schema-validator</artifactId>
       <version>1.0.76</version>
+    </dependency>
+    <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-identity</artifactId>
+      <version>1.14.2</version>
     </dependency>
 
     <!-- test dependencies -->
