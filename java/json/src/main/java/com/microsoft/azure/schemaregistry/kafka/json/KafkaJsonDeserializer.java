@@ -58,9 +58,9 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
             tokenCredential = new DefaultAzureCredentialBuilder().build();
         } else {
             throw new RuntimeException(
-            "TokenCredential not created for serializer. " +
-            "Please provide a TokenCredential in config or set " +
-            "\"create.default.azure.credential\" to true."
+            "TokenCredential not created for serializer. "
+            + "Please provide a TokenCredential in config or set "
+            + "\"create.default.azure.credential\" to true."
             );
         }
 
