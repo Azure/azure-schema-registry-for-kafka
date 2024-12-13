@@ -110,7 +110,7 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
         } catch (JsonSerializationException e) {
             throw e;
         } catch (Exception e) {
-            throw new com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException("Execption occured during deserialization", e);
+            throw new JsonSerializationException("Execption occured during deserialization", e);
         }
     }
 }
