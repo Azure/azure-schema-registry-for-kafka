@@ -7,6 +7,7 @@ import com.azure.core.models.MessageContent;
 import com.azure.core.util.BinaryData;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.serializer.TypeReference;
+import com.azure.data.schemaregistry.SchemaRegistryAsyncClient;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deserializer<T> {
     private SchemaRegistryApacheAvroSerializer serializer;
     private KafkaAvroDeserializerConfig config;
+    private SchemaRegistryAsyncClient client;
 
     /**
      * Empty constructor used by Kafka consumer
@@ -48,16 +50,15 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
      */
     public void configure(Map<String, ?> props, boolean isKey) {
         this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
-
+        this.client =new SchemaRegistryClientBuilder()
+                .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
+                .credential(this.config.getCredential())
+                .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
+                .buildAsyncClient();
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
-            .schemaRegistryClient(
-                new SchemaRegistryClientBuilder()
-                    .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
-                    .credential(this.config.getCredential())
-                    .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
-                    .buildAsyncClient())
-            .avroSpecificReader(this.config.getAvroSpecificReader())
-            .buildSerializer();
+                .schemaRegistryClient(client)
+                .avroSpecificReader(this.config.getAvroSpecificReader())
+                .buildSerializer();
     }
 
     /**
@@ -68,7 +69,7 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
      */
     @Override
     public T deserialize(String topic, byte[] bytes) {
-        return null;
+        return deserialize(topic, null, bytes);
     }
 
     /**
@@ -81,15 +82,13 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
     @Override
     public T deserialize(String topic, Headers headers, byte[] bytes) {
         MessageContent message = new MessageContent();
-        message.setBodyAsBinaryData(BinaryData.fromBytes(bytes));
-
-        Header contentTypeHeader = headers.lastHeader("content-type");
-        if (contentTypeHeader != null) {
-            message.setContentType(new String(contentTypeHeader.value()));
-        } else {
-            message.setContentType("");
-        }
-
+        byte length = bytes[0];
+        byte[] contentTypeHeaderBytes = new byte[length];
+        byte[] body = new byte[bytes.length - 1 - length];
+        System.arraycopy(bytes, 1, contentTypeHeaderBytes, 0, contentTypeHeaderBytes.length);
+        System.arraycopy(bytes, 1 + length, body, 0, body.length);
+        message.setBodyAsBinaryData(BinaryData.fromBytes(body));
+        message.setContentType(new String(contentTypeHeaderBytes));
         return (T) this.serializer.deserialize(
                 message,
                 TypeReference.createInstance(this.config.getAvroSpecificType()));
