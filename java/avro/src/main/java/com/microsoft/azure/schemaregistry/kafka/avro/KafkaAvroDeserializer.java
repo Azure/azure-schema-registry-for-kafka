@@ -7,7 +7,6 @@ import com.azure.core.models.MessageContent;
 import com.azure.core.util.BinaryData;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.serializer.TypeReference;
-import com.azure.data.schemaregistry.SchemaRegistryAsyncClient;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
@@ -30,7 +29,6 @@ import java.util.Map;
 public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deserializer<T> {
     private SchemaRegistryApacheAvroSerializer serializer;
     private KafkaAvroDeserializerConfig config;
-    private SchemaRegistryAsyncClient client;
 
     /**
      * Empty constructor used by Kafka consumer
@@ -50,13 +48,14 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
      */
     public void configure(Map<String, ?> props, boolean isKey) {
         this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
-        this.client =new SchemaRegistryClientBuilder()
-                .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
-                .credential(this.config.getCredential())
-                .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
-                .buildAsyncClient();
+
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
-                .schemaRegistryClient(client)
+                .schemaRegistryClient(
+                        new SchemaRegistryClientBuilder()
+                                .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
+                                .credential(this.config.getCredential())
+                                .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
+                                .buildAsyncClient())
                 .avroSpecificReader(this.config.getAvroSpecificReader())
                 .buildSerializer();
     }

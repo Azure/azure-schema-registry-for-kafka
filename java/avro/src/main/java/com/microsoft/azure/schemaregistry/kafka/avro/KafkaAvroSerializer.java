@@ -6,7 +6,6 @@ package com.microsoft.azure.schemaregistry.kafka.avro;
 import com.azure.core.models.MessageContent;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.serializer.TypeReference;
-import com.azure.data.schemaregistry.SchemaRegistryAsyncClient;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
@@ -28,7 +27,6 @@ import java.util.Map;
  */
 public class KafkaAvroSerializer<T> implements Serializer<T> {
     private SchemaRegistryApacheAvroSerializer serializer;
-    private SchemaRegistryAsyncClient client;
 
     /**
      * Empty constructor for Kafka producer
@@ -49,18 +47,18 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
     @Override
     public void configure(Map<String, ?> props, boolean isKey) {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
-        this.client =new SchemaRegistryClientBuilder()
-                .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
-                .credential(config.getCredential())
-                .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-ser-1.0"))
-                .buildAsyncClient();
+
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
-                .schemaRegistryClient(client)
+                .schemaRegistryClient(new SchemaRegistryClientBuilder()
+                        .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
+                        .credential(config.getCredential())
+                        .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-ser-1.0"))
+                        .buildAsyncClient())
                 .schemaGroup(config.getSchemaGroup())
                 .autoRegisterSchemas(config.getAutoRegisterSchemas())
                 .buildSerializer();
-
     }
+
 
     /**
      * Serializes GenericRecord or SpecificRecord into a byte array, containing a GUID reference to schema
