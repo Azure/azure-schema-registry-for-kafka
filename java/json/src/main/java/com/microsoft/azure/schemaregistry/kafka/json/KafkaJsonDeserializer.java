@@ -104,11 +104,10 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
             if (errors.size() == 0) {
                 return dataObject;
             } else {
-                throw new com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException(
+                throw new JsonSerializationException(
                         "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
             }
-        } catch (
-                com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException e) {
+        } catch (JsonSerializationException e) {
             throw e;
         } catch (Exception e) {
             throw new com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException("Execption occured during deserialization", e);
