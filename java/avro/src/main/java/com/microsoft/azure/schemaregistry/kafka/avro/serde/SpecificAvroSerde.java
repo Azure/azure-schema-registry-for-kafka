@@ -4,19 +4,22 @@
 package com.microsoft.azure.schemaregistry.kafka.avro.serde;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializer;
-import org.apache.kafka.common.annotation.InterfaceStability;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.Map;
-
+/**
+ * Empty constructor used by Kafka consumer
+ */
 public class SpecificAvroSerde<T extends org.apache.avro.specific.SpecificRecord>
         implements Serde<T> {
 
     private final Serde<T> inner;
-
+    /**
+     * Empty constructor used by Kafka consumer
+     */
     public SpecificAvroSerde() {
         inner = Serdes.serdeFrom(new KafkaAvroSerializer<T>(), new KafkaAvroDeserializer<T>());
     }

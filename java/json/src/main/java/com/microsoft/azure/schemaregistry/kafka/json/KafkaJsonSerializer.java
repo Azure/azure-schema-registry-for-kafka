@@ -73,7 +73,27 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
      */
     @Override
     public byte[] serialize(String topic, T record) {
-        return serialize(topic, null, record);
+        if (record == null) {
+            return null;
+        }
+
+        byte[] recordBytes;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            recordBytes = mapper.writeValueAsBytes(record);
+                byte[] schemaIdBytes = getSchemaId(record).getBytes();
+                byte[] bytes = new byte[1 + schemaIdBytes.length + recordBytes.length];
+                bytes[0] = (byte) schemaIdBytes.length;
+                System.arraycopy(schemaIdBytes, 0, bytes, 1, schemaIdBytes.length);
+                System.arraycopy(recordBytes, 0, bytes, 1 + schemaIdBytes.length, recordBytes.length);
+                return bytes;
+        } catch (IllegalStateException e) {
+            throw new JsonSerializationException("Error occured while generating schema", e);
+        } catch (JsonProcessingException e) {
+            throw new JsonSerializationException("Error occured while serializing record into bytes", e);
+        } catch (Exception e) {
+            throw new JsonSerializationException("Execption occured during serialization", e);
+        }
     }
 
     /**
@@ -93,13 +113,25 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
         if (record == null) {
             return null;
         }
-
+        String schemaId;
         byte[] recordBytes;
-        SchemaProperties schemaProps;
         try {
             ObjectMapper mapper = new ObjectMapper();
             recordBytes = mapper.writeValueAsBytes(record);
+            schemaId = this.getSchemaId(record);
+            headers.add("schemaId", schemaId.getBytes());
+            return recordBytes;
+        } catch (IllegalStateException e) {
+        throw new JsonSerializationException("Error occured while generating schema", e);
+    } catch (JsonProcessingException e) {
+        throw new JsonSerializationException("Error occured while serializing record into bytes", e);
+    } catch (Exception e) {
+        throw new JsonSerializationException("Execption occured during serialization", e);
+    }
+    }
 
+    String getSchemaId(T record){
+        SchemaProperties schemaProps;
             SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
                     SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON);
             SchemaGeneratorConfig config = configBuilder.build();
@@ -120,19 +152,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
                         jsonSchemaString,
                         SchemaFormat.JSON);
             }
-            byte[] schemaIdBytes = schemaProps.getId().getBytes();
-            byte[] bytes = new byte[1 + schemaIdBytes.length + recordBytes.length];
-            bytes[0] = (byte) schemaIdBytes.length;
-            System.arraycopy(schemaIdBytes, 0, bytes, 1, schemaIdBytes.length);
-            System.arraycopy(recordBytes, 0, bytes, 1 + schemaIdBytes.length, recordBytes.length);
-            return bytes;
-        } catch (IllegalStateException e) {
-            throw new JsonSerializationException("Error occured while generating schema", e);
-        } catch (JsonProcessingException e) {
-            throw new JsonSerializationException("Error occured while serializing record into bytes", e);
-        } catch (Exception e) {
-            throw new JsonSerializationException("Execption occured during serialization", e);
-        }
+            return schemaProps.getId();
     }
 
     @Override
