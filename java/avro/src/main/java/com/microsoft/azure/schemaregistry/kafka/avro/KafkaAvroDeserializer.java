@@ -52,15 +52,17 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
         this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
         TokenCredential tokenCredential;
         tokenCredential = this.config.getCredential();
-        if (tokenCredential == null && this.config.createDefaultAzureCredential()) {
-            tokenCredential = new DefaultAzureCredentialBuilder().build();
-        } else {
-            throw new RuntimeException(
+		if (tokenCredential == null) {
+			if (this.config.createDefaultAzureCredential()) {
+				tokenCredential = new DefaultAzureCredentialBuilder().build();
+			} else {
+				throw new RuntimeException(
                 "TokenCredential not created for serializer. "
                 + "Please provide a TokenCredential in config or set "
                 + "\"create.default.azure.credential\" to true."
-            );
-        }
+            	);
+			}
+		}
 
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
             .schemaRegistryClient(
