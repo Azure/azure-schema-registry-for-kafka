@@ -14,6 +14,8 @@ import org.apache.avro.generic.IndexedRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
+
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
@@ -50,14 +52,14 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
         this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
 
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
-            .schemaRegistryClient(
-                new SchemaRegistryClientBuilder()
-                    .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
-                    .credential(this.config.getCredential())
-                    .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
-                    .buildAsyncClient())
-            .avroSpecificReader(this.config.getAvroSpecificReader())
-            .buildSerializer();
+                .schemaRegistryClient(
+                        new SchemaRegistryClientBuilder()
+                                .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
+                                .credential(this.config.getCredential())
+                                .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
+                                .buildAsyncClient())
+                .avroSpecificReader(this.config.getAvroSpecificReader())
+                .buildSerializer();
     }
 
     /**
@@ -68,7 +70,19 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
      */
     @Override
     public T deserialize(String topic, byte[] bytes) {
-        return null;
+        MessageContent message = new MessageContent();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        byte length = buffer.get();
+        byte[] contentTypeHeaderBytes = new byte[length];
+        buffer.get(contentTypeHeaderBytes);
+        byte[] body = new byte[buffer.remaining()];
+        buffer.get(body);
+        message.setBodyAsBinaryData(BinaryData.fromBytes(body));
+        message.setContentType(new String(contentTypeHeaderBytes));
+        return (T) this.serializer.deserialize(
+                message,
+                TypeReference.createInstance(this.config.getAvroSpecificType())
+        );
     }
 
     /**

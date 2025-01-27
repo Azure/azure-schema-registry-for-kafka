@@ -13,6 +13,7 @@ import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
@@ -73,7 +74,17 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
      */
     @Override
     public byte[] serialize(String topic, T record) {
-        return null;
+        if (record == null) {
+            return null;
+        }
+        MessageContent message = this.serializer.serialize(record, TypeReference.createInstance(MessageContent.class));
+        byte[] contentTypeHeaderBytes = message.getContentType().getBytes();
+        byte[] body = message.getBodyAsBinaryData().toBytes();
+        ByteBuffer buffer = ByteBuffer.allocate(contentTypeHeaderBytes.length + body.length + 1);
+        buffer.put((byte) contentTypeHeaderBytes.length);
+        buffer.put(contentTypeHeaderBytes);
+        buffer.put(body);
+        return buffer.array();
     }
 
     /**

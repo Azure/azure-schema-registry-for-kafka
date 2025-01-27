@@ -3,9 +3,11 @@
 
 package com.microsoft.azure.schemaregistry.kafka.json;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
 import com.azure.core.util.ClientOptions;
@@ -43,67 +45,83 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
      * @param props Map of properties used to configure instance
      * @param isKey Indicates if deserializing record key or value.  Required by Kafka deserializer interface,
      *              no specific functionality has been implemented for key use.
-     *
      * @see KafkaJsonDeserializerConfig Deserializer will use configs found in here and inherited classes.
      */
     public void configure(Map<String, ?> props, boolean isKey) {
         this.config = new KafkaJsonDeserializerConfig((Map<String, Object>) props);
 
         this.client = new SchemaRegistryClientBuilder()
-        .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
-        .credential(this.config.getCredential())
-        .clientOptions(new ClientOptions().setApplicationId("java-json-kafka-des-1.0"))
-        .buildClient();
+                .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
+                .credential(this.config.getCredential())
+                .clientOptions(new ClientOptions().setApplicationId("java-json-kafka-des-1.0"))
+                .buildClient();
     }
 
     /**
      * Deserializes byte array into Java object
+     *
      * @param topic topic associated with the record bytes
-     * @param data serialized bytes, may be null
+     * @param data  serialized bytes, may be null
      * @return deserialize object, may be null
      */
     @Override
     public T deserialize(String topic, byte[] data) {
-        return null;
+        if (data == null) {
+            return null;
+        }
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        byte length = buffer.get();
+        byte[] schemaIdBytes = new byte[length];
+        buffer.get(schemaIdBytes);
+        String schemaId = new String(schemaIdBytes);
+        byte[] recordBytes = new byte[buffer.remaining()];
+        buffer.get(recordBytes);
+        return getObject(schemaId, recordBytes);
     }
 
     /**
      * Deserializes byte array into Java object
-     * @param topic topic associated with the record bytes
+     *
+     * @param topic   topic associated with the record bytes
      * @param headers record headers, may be null
-     * @param data serialized bytes, may be null
-     * @throws JsonSerializationException Wrapped exception catchable by core Kafka producer code
+     * @param data    serialized bytes, may be null
      * @return deserialize object, may be null
+     * @throws com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException
+     * Wrapped exception catchable by core Kafka producer code
      */
     @Override
     public T deserialize(String topic, Headers headers, byte[] data) {
-        T dataObject;
+        if (data == null) {
+            return null;
+        }
         String schemaId;
+        if (headers.lastHeader("schemaId") != null) {
+            schemaId = new String(headers.lastHeader("schemaId").value());
+        } else {
+            throw new JsonSerializationException("Schema Id was not found in record headers", null);
+        }
+        return getObject(schemaId, data);
+    }
 
+    T getObject(String schemaId, byte[] body) {
         try {
             ObjectMapper mapper = new ObjectMapper().configure(
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             mapper.setVisibility(mapper.getVisibilityChecker().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
-            dataObject = (T) mapper.readValue(data, this.config.getJsonSpecificType());
-
-            if (headers.lastHeader("schemaId") != null) {
-                schemaId = new String(headers.lastHeader("schemaId").value());
-            } else {
-                throw new JsonSerializationException("Schema Id was not found in record headers", null);
-            }
+            T dataObject = (T) mapper.readValue(body, this.config.getJsonSpecificType());
 
             SchemaRegistrySchema schema = this.client.getSchema(schemaId);
 
             JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
             JsonSchema jSchema = factory.getSchema(schema.getDefinition());
-            JsonNode node = mapper.readTree(data);
+            JsonNode node = mapper.readTree(body);
 
             Set<ValidationMessage> errors = jSchema.validate(node);
             if (errors.size() == 0) {
                 return dataObject;
             } else {
                 throw new JsonSerializationException(
-                    "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
+                        "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
             }
         } catch (JsonSerializationException e) {
             throw e;
@@ -113,5 +131,7 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
     }
 
     @Override
-    public void close() { }
+    public void close() {
+    }
+
 }
