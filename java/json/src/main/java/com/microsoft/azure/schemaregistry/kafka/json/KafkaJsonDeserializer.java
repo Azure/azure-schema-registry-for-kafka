@@ -3,6 +3,7 @@
 
 package com.microsoft.azure.schemaregistry.kafka.json;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -65,14 +66,17 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
      */
     @Override
     public T deserialize(String topic, byte[] data) {
-        if (data == null) return null;
-        byte length = data[0];
+        if (data == null) {
+            return null;
+        }
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        byte length = buffer.get();
         byte[] schemaIdBytes = new byte[length];
-        byte[] body = new byte[data.length - 1 - length];
-        System.arraycopy(data, 1, schemaIdBytes, 0, schemaIdBytes.length);
-        System.arraycopy(data, 1 + length, body, 0, body.length);
+        buffer.get(schemaIdBytes);
         String schemaId = new String(schemaIdBytes);
-        return getObject(schemaId, data);
+        byte[] recordBytes = new byte[buffer.remaining()];
+        buffer.get(recordBytes);
+        return getObject(schemaId, recordBytes);
     }
 
     /**
@@ -82,21 +86,24 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
      * @param headers record headers, may be null
      * @param data    serialized bytes, may be null
      * @return deserialize object, may be null
-     * @throws com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException Wrapped exception catchable by core Kafka producer code
+     * @throws com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException
+     * Wrapped exception catchable by core Kafka producer code
      */
     @Override
     public T deserialize(String topic, Headers headers, byte[] data) {
-        if (data == null) return null;
+        if (data == null) {
+            return null;
+        }
         String schemaId;
-            if (headers.lastHeader("schemaId") != null) {
-                schemaId = new String(headers.lastHeader("schemaId").value());
-            } else {
-                throw new JsonSerializationException("Schema Id was not found in record headers", null);
-            }
-            return getObject(schemaId, data);
+        if (headers.lastHeader("schemaId") != null) {
+            schemaId = new String(headers.lastHeader("schemaId").value());
+        } else {
+            throw new JsonSerializationException("Schema Id was not found in record headers", null);
+        }
+        return getObject(schemaId, data);
     }
 
-    T getObject(String schemaId, byte[] body){
+    T getObject(String schemaId, byte[] body) {
         try {
             ObjectMapper mapper = new ObjectMapper().configure(
                     DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -113,17 +120,16 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
             if (errors.size() == 0) {
                 return dataObject;
             } else {
-                throw new com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException(
+                throw new JsonSerializationException(
                         "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
             }
-        }
-        catch (com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException e) {
+        } catch (JsonSerializationException e) {
             throw e;
         } catch (Exception e) {
-            throw new com.microsoft.azure.schemaregistry.kafka.json.JsonSerializationException("Execption occured during deserialization", e);
+            throw new JsonSerializationException("Execption occured during deserialization", e);
         }
-
     }
+
     @Override
     public void close() {
     }

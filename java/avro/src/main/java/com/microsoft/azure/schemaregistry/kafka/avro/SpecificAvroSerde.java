@@ -1,36 +1,35 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.azure.schemaregistry.kafka.avro.serde;
-
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializer;
-import org.apache.avro.generic.GenericRecord;
+package com.microsoft.azure.schemaregistry.kafka.avro;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serializer;
+
 import java.util.Map;
 /**
- * Empty constructor used by Kafka consumer
+ * Serde (Serializer / Deserializer) class for Kafka Streams library compatible with Azure Schema Registry
  */
-public class GenericAvroSerde implements Serde<GenericRecord> {
+public class SpecificAvroSerde<T extends org.apache.avro.specific.SpecificRecord>
+        implements Serde<T> {
 
-    private final Serde<GenericRecord> inner;
+    private final Serde<T> inner;
+
     /**
-     * Empty constructor used by Kafka consumer
+     * Empty Constructor
      */
-    public GenericAvroSerde() {
-        inner = Serdes.serdeFrom(new KafkaAvroSerializer(), new KafkaAvroDeserializer());
+    public SpecificAvroSerde() {
+        inner = Serdes.serdeFrom(new KafkaAvroSerializer<T>(), new KafkaAvroDeserializer<T>());
     }
 
     @Override
-    public Serializer<GenericRecord> serializer() {
+    public Serializer<T> serializer() {
         return inner.serializer();
     }
 
     @Override
-    public Deserializer<GenericRecord> deserializer() {
+    public Deserializer<T> deserializer() {
         return inner.deserializer();
     }
 

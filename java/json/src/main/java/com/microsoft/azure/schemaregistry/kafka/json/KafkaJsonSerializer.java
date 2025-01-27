@@ -19,6 +19,7 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 import com.github.victools.jsonschema.generator.SchemaVersion;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
@@ -76,17 +77,16 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
         if (record == null) {
             return null;
         }
-
         byte[] recordBytes;
         try {
             ObjectMapper mapper = new ObjectMapper();
             recordBytes = mapper.writeValueAsBytes(record);
-                byte[] schemaIdBytes = getSchemaId(record).getBytes();
-                byte[] bytes = new byte[1 + schemaIdBytes.length + recordBytes.length];
-                bytes[0] = (byte) schemaIdBytes.length;
-                System.arraycopy(schemaIdBytes, 0, bytes, 1, schemaIdBytes.length);
-                System.arraycopy(recordBytes, 0, bytes, 1 + schemaIdBytes.length, recordBytes.length);
-                return bytes;
+            byte[] schemaIdBytes = getSchemaId(record).getBytes();
+            ByteBuffer buffer = ByteBuffer.allocate(1 + schemaIdBytes.length + recordBytes.length);
+            buffer.put((byte) schemaIdBytes.length);
+            buffer.put(schemaIdBytes);
+            buffer.put(recordBytes);
+            return buffer.array();
         } catch (IllegalStateException e) {
             throw new JsonSerializationException("Error occured while generating schema", e);
         } catch (JsonProcessingException e) {
@@ -122,37 +122,37 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
             headers.add("schemaId", schemaId.getBytes());
             return recordBytes;
         } catch (IllegalStateException e) {
-        throw new JsonSerializationException("Error occured while generating schema", e);
-    } catch (JsonProcessingException e) {
-        throw new JsonSerializationException("Error occured while serializing record into bytes", e);
-    } catch (Exception e) {
-        throw new JsonSerializationException("Execption occured during serialization", e);
-    }
+            throw new JsonSerializationException("Error occured while generating schema", e);
+        } catch (JsonProcessingException e) {
+            throw new JsonSerializationException("Error occured while serializing record into bytes", e);
+        } catch (Exception e) {
+            throw new JsonSerializationException("Execption occured during serialization", e);
+        }
     }
 
-    String getSchemaId(T record){
+    String getSchemaId(T record) {
         SchemaProperties schemaProps;
-            SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
-                    SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON);
-            SchemaGeneratorConfig config = configBuilder.build();
-            SchemaGenerator generator = new SchemaGenerator(config);
-            JsonNode jsonSchema = generator.generateSchema(record.getClass());
-            String jsonSchemaString = jsonSchema.toString();
+        SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
+                SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON);
+        SchemaGeneratorConfig config = configBuilder.build();
+        SchemaGenerator generator = new SchemaGenerator(config);
+        JsonNode jsonSchema = generator.generateSchema(record.getClass());
+        String jsonSchemaString = jsonSchema.toString();
 
-            if (this.autoRegisterSchemas) {
-                schemaProps = this.client.registerSchema(
-                        this.schemaGroup,
-                        record.getClass().getName(),
-                        jsonSchemaString,
-                        SchemaFormat.JSON);
-            } else {
-                schemaProps = this.client.getSchemaProperties(
-                        this.schemaGroup,
-                        record.getClass().getName(),
-                        jsonSchemaString,
-                        SchemaFormat.JSON);
-            }
-            return schemaProps.getId();
+        if (this.autoRegisterSchemas) {
+            schemaProps = this.client.registerSchema(
+                    this.schemaGroup,
+                    record.getClass().getName(),
+                    jsonSchemaString,
+                    SchemaFormat.JSON);
+        } else {
+            schemaProps = this.client.getSchemaProperties(
+                    this.schemaGroup,
+                    record.getClass().getName(),
+                    jsonSchemaString,
+                    SchemaFormat.JSON);
+        }
+        return schemaProps.getId();
     }
 
     @Override

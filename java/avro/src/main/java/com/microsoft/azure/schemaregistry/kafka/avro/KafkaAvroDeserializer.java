@@ -14,6 +14,8 @@ import org.apache.avro.generic.IndexedRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
+
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
@@ -69,16 +71,18 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
     @Override
     public T deserialize(String topic, byte[] bytes) {
         MessageContent message = new MessageContent();
-        byte length = bytes[0];
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        byte length = buffer.get();
         byte[] contentTypeHeaderBytes = new byte[length];
-        byte[] body = new byte[bytes.length - 1 - length];
-        System.arraycopy(bytes, 1, contentTypeHeaderBytes, 0, contentTypeHeaderBytes.length);
-        System.arraycopy(bytes, 1 + length, body, 0, body.length);
+        buffer.get(contentTypeHeaderBytes);
+        byte[] body = new byte[buffer.remaining()];
+        buffer.get(body);
         message.setBodyAsBinaryData(BinaryData.fromBytes(body));
         message.setContentType(new String(contentTypeHeaderBytes));
         return (T) this.serializer.deserialize(
                 message,
-                TypeReference.createInstance(this.config.getAvroSpecificType()));
+                TypeReference.createInstance(this.config.getAvroSpecificType())
+        );
     }
 
     /**
