@@ -80,11 +80,11 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
         MessageContent message = this.serializer.serialize(record, TypeReference.createInstance(MessageContent.class));
         byte[] contentTypeHeaderBytes = message.getContentType().getBytes();
         byte[] body = message.getBodyAsBinaryData().toBytes();
-        ByteBuffer buffer = ByteBuffer.allocate(contentTypeHeaderBytes.length + body.length + 1);
-        buffer.put((byte) contentTypeHeaderBytes.length);
-        buffer.put(contentTypeHeaderBytes);
-        buffer.put(body);
-        return buffer.array();
+        byte[] bytes = new byte[1 + contentTypeHeaderBytes.length + body.length];
+        bytes[0] = (byte) contentTypeHeaderBytes.length;
+        System.arraycopy(contentTypeHeaderBytes, 0, bytes, 1, contentTypeHeaderBytes.length);
+        System.arraycopy(body, 0, bytes, 1 + contentTypeHeaderBytes.length, body.length);
+        return bytes;
     }
 
     /**

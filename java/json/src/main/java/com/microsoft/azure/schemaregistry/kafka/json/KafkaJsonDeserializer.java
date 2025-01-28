@@ -69,14 +69,13 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
         if (data == null) {
             return null;
         }
-        ByteBuffer buffer = ByteBuffer.wrap(data);
-        byte length = buffer.get();
-        byte[] schemaIdBytes = new byte[length];
-        buffer.get(schemaIdBytes);
-        String schemaId = new String(schemaIdBytes);
-        byte[] recordBytes = new byte[buffer.remaining()];
-        buffer.get(recordBytes);
-        return getObject(schemaId, recordBytes);
+        byte length = data[0];
+        String schemaId = new String(data, 1, length);
+        int bodyOffset = 1 + length;
+        int bodyLength = data.length - bodyOffset;
+        byte[] body = new byte[bodyLength];
+        System.arraycopy(data, bodyOffset, body, 0, bodyLength);
+        return getObject(schemaId, body);
     }
 
     /**

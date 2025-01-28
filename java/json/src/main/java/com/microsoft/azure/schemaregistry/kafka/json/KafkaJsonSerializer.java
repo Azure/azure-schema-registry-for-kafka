@@ -82,11 +82,11 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
             ObjectMapper mapper = new ObjectMapper();
             recordBytes = mapper.writeValueAsBytes(record);
             byte[] schemaIdBytes = getSchemaId(record).getBytes();
-            ByteBuffer buffer = ByteBuffer.allocate(1 + schemaIdBytes.length + recordBytes.length);
-            buffer.put((byte) schemaIdBytes.length);
-            buffer.put(schemaIdBytes);
-            buffer.put(recordBytes);
-            return buffer.array();
+            byte[] bytes = new byte[1 + schemaIdBytes.length + recordBytes.length];
+            bytes[0] = (byte) schemaIdBytes.length;
+            System.arraycopy(schemaIdBytes, 0, bytes, 1, schemaIdBytes.length);
+            System.arraycopy(recordBytes, 0, bytes, 1 + schemaIdBytes.length, recordBytes.length);
+            return bytes;
         } catch (IllegalStateException e) {
             throw new JsonSerializationException("Error occured while generating schema", e);
         } catch (JsonProcessingException e) {
