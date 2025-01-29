@@ -19,7 +19,6 @@ import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
 import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
 import com.github.victools.jsonschema.generator.SchemaVersion;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
@@ -112,6 +111,9 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
     public byte[] serialize(String topic, Headers headers, T record) {
         if (record == null) {
             return null;
+        }
+        if (headers == null) {
+            return serialize(topic, record);
         }
         String schemaId;
         byte[] recordBytes;

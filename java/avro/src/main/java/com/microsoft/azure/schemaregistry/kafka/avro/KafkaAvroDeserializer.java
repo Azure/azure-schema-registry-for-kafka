@@ -15,7 +15,6 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
@@ -92,6 +91,9 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
      */
     @Override
     public T deserialize(String topic, Headers headers, byte[] bytes) {
+        if (headers == null) {
+            return deserialize(topic, bytes);
+        }
         MessageContent message = new MessageContent();
         message.setBodyAsBinaryData(BinaryData.fromBytes(bytes));
 

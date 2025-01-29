@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>azure-schemaregistry-kafka-json</artifactId>
-  <version>1.0.0-beta.2</version>
+  <version>1.0.0-beta.3</version>
   <name>azure-schemaregistry-kafka-json</name>
 
   <scm>

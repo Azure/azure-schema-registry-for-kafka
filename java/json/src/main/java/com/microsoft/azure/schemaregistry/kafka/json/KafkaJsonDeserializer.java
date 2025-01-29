@@ -3,7 +3,6 @@
 
 package com.microsoft.azure.schemaregistry.kafka.json;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -92,6 +91,9 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
     public T deserialize(String topic, Headers headers, byte[] data) {
         if (data == null) {
             return null;
+        }
+        if (headers == null) {
+            return deserialize(topic, data);
         }
         String schemaId;
         if (headers.lastHeader("schemaId") != null) {
