@@ -50,21 +50,42 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
                 return default(T);
             }
 
-            BinaryContent content = new BinaryContent
-            {
-                Data = new BinaryData(data.ToArray()),
-            };
 
-            if (context.Headers.TryGetLastBytes("content-type", out var headerBytes))
+
+            if (context.Headers == null)
             {
-                content.ContentType = Encoding.UTF8.GetString(headerBytes);
+                byte[] bytes = data.ToArray();
+                byte length = bytes[0];
+                byte[] contentTypeHeaderBytes = new byte[length];
+                byte[] body = new byte[bytes.Length - 1 - length];
+                Array.Copy(bytes, 1, contentTypeHeaderBytes, 0, contentTypeHeaderBytes.Length);
+                Array.Copy(bytes, 1 + length, body, 0, body.Length);
+                BinaryContent content = new BinaryContent
+                {
+                    Data = new BinaryData(body),
+                };
+                content.ContentType = Encoding.UTF8.GetString(contentTypeHeaderBytes);
+                return serializer.Deserialize<T>(content);
             }
             else
             {
-                content.ContentType = string.Empty;
-            }
 
-            return serializer.Deserialize<T>(content);
+                BinaryContent content = new BinaryContent
+                {
+                    Data = new BinaryData(data.ToArray()),
+                };
+
+                if (context.Headers.TryGetLastBytes("content-type", out var headerBytes))
+                {
+                    content.ContentType = Encoding.UTF8.GetString(headerBytes);
+                }
+                else
+                {
+                    content.ContentType = string.Empty;
+                }
+
+                return serializer.Deserialize<T>(content);
+            }
         }
     }
 }

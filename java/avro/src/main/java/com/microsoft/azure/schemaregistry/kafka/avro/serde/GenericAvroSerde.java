@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.azure.schemaregistry.kafka.avro;
+package com.microsoft.azure.schemaregistry.kafka.avro.serde;
 
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;

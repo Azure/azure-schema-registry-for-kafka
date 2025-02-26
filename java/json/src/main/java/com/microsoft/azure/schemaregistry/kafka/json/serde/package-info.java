@@ -1,4 +1,4 @@
 /**
- * Package containing Json-specific implementations of Kafka serializer and deserializer.
+ * Package containing Json-specific implementations of Kafka Json Serde
  */
 package com.microsoft.azure.schemaregistry.kafka.json.serde;
