@@ -5,6 +5,7 @@
 namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
 {
     using System;
+    using System.Reflection.Metadata;
     using System.Text;
     using Confluent.Kafka;
     using global::Azure;
@@ -49,28 +50,11 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
             {
                 return default(T);
             }
-
-
-
-            if (context.Headers == null)
-            {
-                byte[] bytes = data.ToArray();
-                byte length = bytes[0];
-                byte[] contentTypeHeaderBytes = new byte[length];
-                byte[] body = new byte[bytes.Length - 1 - length];
-                Array.Copy(bytes, 1, contentTypeHeaderBytes, 0, contentTypeHeaderBytes.Length);
-                Array.Copy(bytes, 1 + length, body, 0, body.Length);
-                BinaryContent content = new BinaryContent
-                {
-                    Data = new BinaryData(body),
-                };
-                content.ContentType = Encoding.UTF8.GetString(contentTypeHeaderBytes);
-                return serializer.Deserialize<T>(content);
-            }
-            else
+            BinaryContent content;
+            if (context.Headers != null)
             {
 
-                BinaryContent content = new BinaryContent
+                content = new BinaryContent
                 {
                     Data = new BinaryData(data.ToArray()),
                 };
@@ -83,9 +67,23 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
                 {
                     content.ContentType = string.Empty;
                 }
-
-                return serializer.Deserialize<T>(content);
             }
+            else
+            {
+                byte[] bytes = data.ToArray();
+                byte length = bytes[0];
+                byte[] contentTypeHeaderBytes = new byte[length];
+                byte[] body = new byte[bytes.Length - 1 - length];
+                Array.Copy(bytes, 1, contentTypeHeaderBytes, 0, contentTypeHeaderBytes.Length);
+                Array.Copy(bytes, 1 + length, body, 0, body.Length);
+                content = new BinaryContent
+                {
+                    Data = new BinaryData(body),
+                };
+                content.ContentType = Encoding.UTF8.GetString(contentTypeHeaderBytes);
+
+            }
+            return serializer.Deserialize<T>(content);
         }
     }
 }
