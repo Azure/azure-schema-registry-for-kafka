@@ -46,13 +46,27 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             {
                 return default(T);
             }
-
-            if (!context.Headers.TryGetLastBytes("schemaId", out var lastHeader) || lastHeader.Length == 0)
+            String schemaId;
+            if (context.Headers != null)
             {
-                return default(T);
+                if (!context.Headers.TryGetLastBytes("schemaId", out var lastHeader) || lastHeader.Length == 0)
+                {
+                    return default(T);
+                }
+                schemaId = UTF8Encoding.UTF8.GetString(lastHeader); ;
+            }
+            else
+            {
+                byte[] bytes = data.ToArray();
+                byte length = bytes[0];
+                byte[] schemaIdBytes = new byte[length];
+                byte[] body = new byte[bytes.Length - 1 - length];
+                Array.Copy(bytes, 1, schemaIdBytes, 0, schemaIdBytes.Length);
+                Array.Copy(bytes, 1 + length, body, 0, body.Length);
+                schemaId = UTF8Encoding.UTF8.GetString(schemaIdBytes);
+                data = new ReadOnlySpan<byte>(body);
             }
 
-            var schemaId = UTF8Encoding.UTF8.GetString(lastHeader);
             if (string.IsNullOrEmpty(schemaId))
             {
                 return default(T);

@@ -73,7 +73,17 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
      */
     @Override
     public byte[] serialize(String topic, T record) {
-        return null;
+        if (record == null) {
+            return null;
+        }
+        MessageContent message = this.serializer.serialize(record, TypeReference.createInstance(MessageContent.class));
+        byte[] contentTypeHeaderBytes = message.getContentType().getBytes();
+        byte[] body = message.getBodyAsBinaryData().toBytes();
+        byte[] bytes = new byte[1 + contentTypeHeaderBytes.length + body.length];
+        bytes[0] = (byte) contentTypeHeaderBytes.length;
+        System.arraycopy(contentTypeHeaderBytes, 0, bytes, 1, contentTypeHeaderBytes.length);
+        System.arraycopy(body, 0, bytes, 1 + contentTypeHeaderBytes.length, body.length);
+        return bytes;
     }
 
     /**
@@ -98,7 +108,9 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
         if (record == null) {
             return null;
         }
-
+        if (headers == null) {
+            return serialize(topic, record);
+        }
         MessageContent message = this.serializer.serialize(record, TypeReference.createInstance(MessageContent.class));
         byte[] contentTypeHeaderBytes = message.getContentType().getBytes();
         headers.add("content-type", contentTypeHeaderBytes);

@@ -9,7 +9,7 @@
   <groupId>com.microsoft.azure</groupId>
   <artifactId>azure-schemaregistry-avro-samples</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.0-beta.1</version>
+  <version>1.0.0-beta.2</version>
   <name>azure-schemaregistry-avro-samples</name>
   <url>http://maven.apache.org</url>
 
@@ -23,7 +23,7 @@
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-schemaregistry-kafka-avro</artifactId>
-      <version>1.1.0-beta.1</version>
+      <version>1.0.0-beta.2</version>
     </dependency>
     <dependency>
       <groupId>com.azure</groupId>
