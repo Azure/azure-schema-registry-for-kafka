@@ -63,7 +63,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
             throw new RuntimeException(
                 "TokenCredential not created for serializer. "
                 + "Please provide a TokenCredential in config or set "
-                + "\"create.default.azure.credential\" to true."
+                + "\"use.azure.credential\" to true."
             );
         }
 
