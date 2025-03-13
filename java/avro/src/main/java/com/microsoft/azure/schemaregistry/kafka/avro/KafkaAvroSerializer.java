@@ -52,16 +52,16 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
         TokenCredential tokenCredential;
         tokenCredential = config.getCredential();
         if (tokenCredential == null) {
-			if (config.createDefaultAzureCredential()) {
-				tokenCredential = new DefaultAzureCredentialBuilder().build();
-			} else {
-				throw new RuntimeException(
+            if (config.createDefaultAzureCredential()) {
+                tokenCredential = new DefaultAzureCredentialBuilder().build();
+            } else {
+                throw new RuntimeException(
                 "TokenCredential not created for serializer. "
                 + "Please provide a TokenCredential in config or set "
-                + "\"create.default.azure.credential\" to true."
-            	);
-			}
-		}
+                + "\"use.azure.credential\" to true."
+                );
+            }
+        }
 
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
                 .schemaRegistryClient(new SchemaRegistryClientBuilder()

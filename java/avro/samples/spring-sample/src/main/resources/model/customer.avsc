@@ -1,0 +1,12 @@
+{
+  "namespace": "com.microsoft.azure.azure_schemaregistry_avro_spring_sample.model",
+  "type": "record",
+  "name": "Customer",
+  "fields": [
+    {"name": "id", "type": "string"},
+    {"name": "name", "type": "string"},
+    {"name": "email", "type": "string"},
+    {"name": "registrationDate", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "active", "type": "boolean", "default": true}
+  ]
+}
