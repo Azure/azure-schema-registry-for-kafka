@@ -38,7 +38,7 @@ class AbstractKafkaSerdeConfig {
 
     public static final Integer MAX_SCHEMA_MAP_SIZE_CONFIG_DEFAULT = 1000;
 
-    public static final String CREATE_DEFAULT_AZURE_CREDENTIAL = "create.default.azure.credential";
+    public static final String USE_AZURE_CREDENTIAL = "use.azure.credential";
 
     AbstractKafkaSerdeConfig(Map<String, Object> props) {
         this.props = (Map<String, Object>) props;
@@ -57,7 +57,7 @@ class AbstractKafkaSerdeConfig {
     }
 
     public Boolean createDefaultAzureCredential() {
-        return (Boolean) this.props.getOrDefault(CREATE_DEFAULT_AZURE_CREDENTIAL, false);
+        return (Boolean) this.props.getOrDefault(USE_AZURE_CREDENTIAL, false);
     }
 
     public Integer getMaxSchemaMapSize() {

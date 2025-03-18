@@ -26,6 +26,9 @@ public class AppConfig {
 	@Value("${azure.schemaregistry.group}")
 	private String schemaGroup;
 
+	@Value("${azure.schemaregistry.use.azure.credential}")
+	private String useAzureCredential;
+
 	// The Kafka SASL JAAS config needs to be built from the Event Hub connection
 	// string
 	public String buildJaasConfig() {
@@ -87,5 +90,9 @@ public class AppConfig {
 
 	public String getSchemaGroup() {
 		return schemaGroup;
+	}
+
+	public Boolean getUseAzureCredential() {
+		return Boolean.parseBoolean(useAzureCredential);
 	}
 }
