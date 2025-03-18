@@ -3,6 +3,7 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
+import com.azure.core.credential.TokenCredential;
 import com.azure.core.models.MessageContent;
 import com.azure.core.util.BinaryData;
 import com.azure.core.util.ClientOptions;
@@ -10,6 +11,7 @@ import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import org.apache.avro.generic.IndexedRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
@@ -48,12 +50,24 @@ public class KafkaAvroDeserializer<T extends IndexedRecord> implements Deseriali
      */
     public void configure(Map<String, ?> props, boolean isKey) {
         this.config = new KafkaAvroDeserializerConfig((Map<String, Object>) props);
-
+        TokenCredential tokenCredential;
+        tokenCredential = this.config.getCredential();
+        if (tokenCredential == null) {
+            if (this.config.createDefaultAzureCredential()) {
+                tokenCredential = new DefaultAzureCredentialBuilder().build();
+            } else {
+                throw new RuntimeException(
+                "TokenCredential not created for serializer. "
+                + "Please provide a TokenCredential in config or set "
+                + "\"use.azure.credential\" to true."
+                );
+            }
+        }
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
             .schemaRegistryClient(
                 new SchemaRegistryClientBuilder()
                     .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
-                    .credential(this.config.getCredential())
+                    .credential(tokenCredential)
                     .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-des-1.0"))
                     .buildAsyncClient())
             .avroSpecificReader(this.config.getAvroSpecificReader())

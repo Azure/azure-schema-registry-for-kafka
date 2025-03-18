@@ -6,6 +6,9 @@ package com.microsoft.azure.schemaregistry.kafka.json;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+
+import com.azure.core.credential.TokenCredential;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
 import com.azure.core.util.ClientOptions;
@@ -49,9 +52,21 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
     public void configure(Map<String, ?> props, boolean isKey) {
         this.config = new KafkaJsonDeserializerConfig((Map<String, Object>) props);
 
+        TokenCredential tokenCredential;
+        tokenCredential = this.config.getCredential();
+        if (tokenCredential == null && this.config.createDefaultAzureCredential()) {
+            tokenCredential = new DefaultAzureCredentialBuilder().build();
+        } else {
+            throw new RuntimeException(
+            "TokenCredential not created for serializer. "
+            + "Please provide a TokenCredential in config or set "
+            + "\"use.azure.credential\" to true."
+            );
+        }
+
         this.client = new SchemaRegistryClientBuilder()
         .fullyQualifiedNamespace(this.config.getSchemaRegistryUrl())
-        .credential(this.config.getCredential())
+        .credential(tokenCredential)
         .clientOptions(new ClientOptions().setApplicationId("java-json-kafka-des-1.0"))
         .buildClient();
     }

@@ -3,6 +3,8 @@
 
 package com.microsoft.azure.schemaregistry.kafka.json;
 
+import com.azure.core.credential.TokenCredential;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
 import com.azure.core.util.ClientOptions;
@@ -52,10 +54,22 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
 
         this.autoRegisterSchemas = config.getAutoRegisterSchemas();
         this.schemaGroup = config.getSchemaGroup();
-        
+
+        TokenCredential tokenCredential;
+        tokenCredential = config.getCredential();
+        if (tokenCredential == null && config.createDefaultAzureCredential()) {
+            tokenCredential = new DefaultAzureCredentialBuilder().build();
+        } else {
+            throw new RuntimeException(
+                "TokenCredential not created for serializer. "
+                + "Please provide a TokenCredential in config or set "
+                + "\"use.azure.credential\" to true."
+            );
+        }
+
         this.client = new SchemaRegistryClientBuilder()
         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
-        .credential(config.getCredential())
+        .credential(tokenCredential)
         .clientOptions(new ClientOptions().setApplicationId("java-json-kafka-ser-1.0"))
         .buildClient();
     }
