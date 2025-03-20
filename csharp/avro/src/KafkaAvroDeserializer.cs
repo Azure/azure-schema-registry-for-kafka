@@ -7,10 +7,10 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
     using System;
     using System.Text;
     using Confluent.Kafka;
-    using global::Azure;
+    using Microsoft.Azure.Data.SchemaRegistry.ApacheAvro;
     using global::Azure.Core;
     using global::Azure.Data.SchemaRegistry;
-    using Microsoft.Azure.Data.SchemaRegistry.ApacheAvro;
+    using global::Azure.Messaging;
 
     /// <summary>
     /// Implementation of Confluent .NET Kafka deserializer, wrapping Azure Schema Registry C# implementation.
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
                 return default(T);
             }
 
-            BinaryContent content = new BinaryContent
+            MessageContent content = new MessageContent
             {
                 Data = new BinaryData(data.ToArray()),
             };

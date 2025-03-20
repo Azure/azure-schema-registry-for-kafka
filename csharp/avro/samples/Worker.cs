@@ -54,7 +54,7 @@ namespace EventHubsForKafkaSample
                     {
                         var invoice = new CustomerInvoice()
                         {
-                            InvoiceId = "something",
+                            InvoiceId = $"New Invoice {x}",
                             MerchantId = "arthur",
                             TransactionValueUsd = 100,
                             UserId = "alice"
