@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 package com.microsoft.azure.schemaregistry.kafka.avro.serde;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializer;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroStreamDeserializer;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroStreamSerializer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -22,7 +22,7 @@ public class SpecificAvroSerde<T extends org.apache.avro.specific.SpecificRecord
      * Empty Constructor
      */
     public SpecificAvroSerde() {
-        inner = Serdes.serdeFrom(new KafkaAvroSerializer<T>(), new KafkaAvroDeserializer<T>());
+        inner = Serdes.serdeFrom(new KafkaAvroStreamSerializer<T>(), new KafkaAvroStreamDeserializer<T>());
     }
 
     @Override

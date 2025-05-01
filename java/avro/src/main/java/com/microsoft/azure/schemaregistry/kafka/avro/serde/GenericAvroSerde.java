@@ -3,8 +3,8 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro.serde;
 
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializer;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroStreamDeserializer;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroStreamSerializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -21,7 +21,7 @@ public class GenericAvroSerde implements Serde<GenericRecord> {
      * Empty constructor
      */
     public GenericAvroSerde() {
-        inner = Serdes.serdeFrom(new KafkaAvroSerializer(), new KafkaAvroDeserializer());
+        inner = Serdes.serdeFrom(new KafkaAvroStreamSerializer(), new KafkaAvroStreamDeserializer());
     }
 
     @Override

@@ -3,12 +3,14 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro;
 
+import com.azure.core.credential.TokenCredential;
 import com.azure.core.models.MessageContent;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.serializer.TypeReference;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializer;
 import com.azure.data.schemaregistry.apacheavro.SchemaRegistryApacheAvroSerializerBuilder;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
@@ -47,11 +49,24 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
     @Override
     public void configure(Map<String, ?> props, boolean isKey) {
         KafkaAvroSerializerConfig config = new KafkaAvroSerializerConfig((Map<String, Object>) props);
+        TokenCredential tokenCredential;
+        tokenCredential = config.getCredential();
+        if (tokenCredential == null) {
+            if (config.createDefaultAzureCredential()) {
+                tokenCredential = new DefaultAzureCredentialBuilder().build();
+            } else {
+                throw new RuntimeException(
+                        "TokenCredential not created for serializer. "
+                                + "Please provide a TokenCredential in config or set "
+                                + "\"use.azure.credential\" to true."
+                );
+            }
+        }
 
         this.serializer = new SchemaRegistryApacheAvroSerializerBuilder()
                 .schemaRegistryClient(new SchemaRegistryClientBuilder()
                         .fullyQualifiedNamespace(config.getSchemaRegistryUrl())
-                        .credential(config.getCredential())
+                        .credential(tokenCredential)
                         .clientOptions(new ClientOptions().setApplicationId("java-avro-kafka-ser-1.0"))
                         .buildAsyncClient())
                 .schemaGroup(config.getSchemaGroup())
@@ -73,17 +88,7 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
      */
     @Override
     public byte[] serialize(String topic, T record) {
-        if (record == null) {
-            return null;
-        }
-        MessageContent message = this.serializer.serialize(record, TypeReference.createInstance(MessageContent.class));
-        byte[] contentTypeHeaderBytes = message.getContentType().getBytes();
-        byte[] body = message.getBodyAsBinaryData().toBytes();
-        byte[] bytes = new byte[1 + contentTypeHeaderBytes.length + body.length];
-        bytes[0] = (byte) contentTypeHeaderBytes.length;
-        System.arraycopy(contentTypeHeaderBytes, 0, bytes, 1, contentTypeHeaderBytes.length);
-        System.arraycopy(body, 0, bytes, 1 + contentTypeHeaderBytes.length, body.length);
-        return bytes;
+        return null;
     }
 
     /**
@@ -108,9 +113,7 @@ public class KafkaAvroSerializer<T> implements Serializer<T> {
         if (record == null) {
             return null;
         }
-        if (headers == null) {
-            return serialize(topic, record);
-        }
+
         MessageContent message = this.serializer.serialize(record, TypeReference.createInstance(MessageContent.class));
         byte[] contentTypeHeaderBytes = message.getContentType().getBytes();
         headers.add("content-type", contentTypeHeaderBytes);

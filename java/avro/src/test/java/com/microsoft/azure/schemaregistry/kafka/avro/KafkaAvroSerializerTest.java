@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class KafkaAvroSerializerTest {
     @Test
     public void testNullRecordReturnNull() {
-        KafkaAvroSerializer serializer = new KafkaAvroSerializer();
+        KafkaAvroStreamSerializer serializer = new KafkaAvroStreamSerializer();
         assertEquals(null, serializer.serialize("dummy-topic", null));
     }
 }
