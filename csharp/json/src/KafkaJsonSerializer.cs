@@ -88,23 +88,10 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Json
             {
                 throw new SerializationException(new Error(ErrorCode.Local_ValueSerialization, $"Schema registered was not json type, it was {schemaProperties.Format}"));
             }
-            var json = jObject.ToString();
-            byte[] recordBytes = UTF8Encoding.UTF8.GetBytes(json);
-            if (context.Headers != null)
-            {
-                context.Headers.Add("schemaId", UTF8Encoding.UTF8.GetBytes(schemaProperties.Id));
-                return recordBytes;
-            }
-            else
-            {
-                byte[] schemaIdBytes = UTF8Encoding.UTF8.GetBytes(schemaProperties.Id);
-                byte[] bytes = new byte[1 + schemaIdBytes.Length + recordBytes.Length];
-                bytes[0] = (byte) schemaIdBytes.Length;
-                Array.Copy(schemaIdBytes, 0, bytes, 1, schemaIdBytes.Length);
-                Array.Copy(recordBytes, 0, bytes, 1 + schemaIdBytes.Length, recordBytes.Length);
-                return bytes;
-            }
 
+            context.Headers.Add("schemaId", UTF8Encoding.UTF8.GetBytes(schemaProperties.Id));
+            var json = jObject.ToString();
+            return UTF8Encoding.UTF8.GetBytes(json);
         }
     }
 }

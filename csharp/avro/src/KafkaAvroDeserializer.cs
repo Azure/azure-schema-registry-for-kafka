@@ -5,7 +5,6 @@
 namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
 {
     using System;
-    using System.Reflection.Metadata;
     using System.Text;
     using Confluent.Kafka;
     using global::Azure;
@@ -33,56 +32,38 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
             this.serializer = new SchemaRegistryAvroSerializer(
                 new SchemaRegistryClient(
                     schemaRegistryUrl,
-                    credential, 
+                    credential,
                     new SchemaRegistryClientOptions
-                        {
-                            Diagnostics =
+                    {
+                        Diagnostics =
                             {
                                 ApplicationId = "net-avro-kafka-des-1.0"
                             }
-                        }),
+                    }),
                 "$default");
         }
-        
+
         public T Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
         {
             if (data.IsEmpty)
             {
                 return default(T);
             }
-            BinaryContent content;
-            if (context.Headers != null)
+
+            BinaryContent content = new BinaryContent
             {
+                Data = new BinaryData(data.ToArray()),
+            };
 
-                content = new BinaryContent
-                {
-                    Data = new BinaryData(data.ToArray()),
-                };
-
-                if (context.Headers.TryGetLastBytes("content-type", out var headerBytes))
-                {
-                    content.ContentType = Encoding.UTF8.GetString(headerBytes);
-                }
-                else
-                {
-                    content.ContentType = string.Empty;
-                }
+            if (context.Headers.TryGetLastBytes("content-type", out var headerBytes))
+            {
+                content.ContentType = Encoding.UTF8.GetString(headerBytes);
             }
             else
             {
-                byte[] bytes = data.ToArray();
-                byte length = bytes[0];
-                byte[] contentTypeHeaderBytes = new byte[length];
-                byte[] body = new byte[bytes.Length - 1 - length];
-                Array.Copy(bytes, 1, contentTypeHeaderBytes, 0, contentTypeHeaderBytes.Length);
-                Array.Copy(bytes, 1 + length, body, 0, body.Length);
-                content = new BinaryContent
-                {
-                    Data = new BinaryData(body),
-                };
-                content.ContentType = Encoding.UTF8.GetString(contentTypeHeaderBytes);
-
+                content.ContentType = string.Empty;
             }
+
             return serializer.Deserialize<T>(content);
         }
     }

@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
     public class KafkaAvroAsyncSerializer<T> : IAsyncSerializer<T>
     {
         private readonly SchemaRegistryAvroSerializer serializer;
-        
+
         public KafkaAvroAsyncSerializer(string schemaRegistryUrl, TokenCredential credential, string schemaGroup, Boolean autoRegisterSchemas = false)
         {
             this.serializer = new SchemaRegistryAvroSerializer(
@@ -45,20 +45,8 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
 
             BinaryContent content = await serializer.SerializeAsync<BinaryContent, T>(o);
             var schemaIdBytes = Encoding.UTF8.GetBytes(content.ContentType.ToString());
-            byte[] body = content.Data.ToArray();
-            if (context.Headers != null)
-            {
-                context.Headers.Add("content-type", schemaIdBytes);
-                return body;
-            }
-            else
-            {
-                byte[] bytes = new byte[1 + schemaIdBytes.Length + body.Length];
-                bytes[0] = (byte)schemaIdBytes.Length;
-                Array.Copy(schemaIdBytes, 0, bytes, 1, schemaIdBytes.Length);
-                Array.Copy(body, 0, bytes, 1 + schemaIdBytes.Length, body.Length);
-                return bytes;
-            }
+            context.Headers.Add("content-type", schemaIdBytes);
+            return content.Data.ToArray();
         }
     }
 }
