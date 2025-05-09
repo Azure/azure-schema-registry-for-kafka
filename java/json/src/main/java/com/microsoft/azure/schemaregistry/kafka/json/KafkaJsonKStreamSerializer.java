@@ -4,19 +4,22 @@
 package com.microsoft.azure.schemaregistry.kafka.json;
 
 import com.azure.core.credential.TokenCredential;
+import com.azure.identity.DefaultAzureCredentialBuilder;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.serialization.Serializer;
 import com.azure.core.util.ClientOptions;
 import com.azure.data.schemaregistry.SchemaRegistryClient;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.models.SchemaFormat;
 import com.azure.data.schemaregistry.models.SchemaProperties;
-import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.victools.jsonschema.generator.*;
-import org.apache.kafka.common.header.Headers;
-import org.apache.kafka.common.serialization.Serializer;
-
+import com.github.victools.jsonschema.generator.OptionPreset;
+import com.github.victools.jsonschema.generator.SchemaGenerator;
+import com.github.victools.jsonschema.generator.SchemaGeneratorConfig;
+import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
+import com.github.victools.jsonschema.generator.SchemaVersion;
 import java.util.Map;
 
 /**
@@ -54,14 +57,16 @@ public class KafkaJsonKStreamSerializer<T> implements Serializer<T> {
 
         TokenCredential tokenCredential;
         tokenCredential = config.getCredential();
-        if (tokenCredential == null && config.createDefaultAzureCredential()) {
-            tokenCredential = new DefaultAzureCredentialBuilder().build();
-        } else {
-            throw new RuntimeException(
-                "TokenCredential not created for serializer. "
-                + "Please provide a TokenCredential in config or set "
-                + "\"use.azure.credential\" to true."
-            );
+        if (tokenCredential == null) {
+            if (config.createDefaultAzureCredential()) {
+                tokenCredential = new DefaultAzureCredentialBuilder().build();
+            } else {
+                throw new RuntimeException(
+                        "TokenCredential not created for serializer. "
+                                + "Please provide a TokenCredential in config or set "
+                                + "\"use.azure.credential\" to true."
+                );
+            }
         }
 
         this.client = new SchemaRegistryClientBuilder()

@@ -57,14 +57,16 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
 
         TokenCredential tokenCredential;
         tokenCredential = config.getCredential();
-        if (tokenCredential == null && config.createDefaultAzureCredential()) {
-            tokenCredential = new DefaultAzureCredentialBuilder().build();
-        } else {
-            throw new RuntimeException(
-                "TokenCredential not created for serializer. "
-                + "Please provide a TokenCredential in config or set "
-                + "\"use.azure.credential\" to true."
-            );
+        if (tokenCredential == null) {
+            if (config.createDefaultAzureCredential()) {
+                tokenCredential = new DefaultAzureCredentialBuilder().build();
+            } else {
+                throw new RuntimeException(
+                        "TokenCredential not created for serializer. "
+                                + "Please provide a TokenCredential in config or set "
+                                + "\"use.azure.credential\" to true."
+                );
+            }
         }
 
         this.client = new SchemaRegistryClientBuilder()
