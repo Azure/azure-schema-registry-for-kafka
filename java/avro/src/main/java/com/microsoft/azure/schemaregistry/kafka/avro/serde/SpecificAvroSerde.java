@@ -4,7 +4,6 @@
 package com.microsoft.azure.schemaregistry.kafka.avro.serde;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer;
 import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializer;
-import org.apache.kafka.common.annotation.InterfaceStability;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -12,11 +11,17 @@ import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.Map;
 
+/**
+ * Serde (Serializer / Deserializer) class
+ */
 public class SpecificAvroSerde<T extends org.apache.avro.specific.SpecificRecord>
         implements Serde<T> {
 
     private final Serde<T> inner;
 
+    /**
+     * Empty constructor
+     */
     public SpecificAvroSerde() {
         inner = Serdes.serdeFrom(new KafkaAvroSerializer<T>(), new KafkaAvroDeserializer<T>());
     }

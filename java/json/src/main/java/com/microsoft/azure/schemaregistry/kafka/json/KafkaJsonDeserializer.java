@@ -79,7 +79,9 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
      */
     @Override
     public T deserialize(String topic, Headers headers, byte[] data) {
-        if (data == null) return null;
+        if (data == null) {
+            return null;
+        }
         T dataObject;
         try {
             byte length = data[0];

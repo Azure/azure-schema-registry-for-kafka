@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.azure.schemaregistry.kafka.json.serde;
-
-import com.microsoft.azure.schemaregistry.kafka.json.KafkaJsonDeserializer;
-import com.microsoft.azure.schemaregistry.kafka.json.KafkaJsonSerializer;
+package com.microsoft.azure.schemaregistry.kafka.avro.serde;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroKStreamDeserializer;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroKStreamSerializer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -13,30 +12,18 @@ import org.apache.kafka.common.serialization.Serializer;
 import java.util.Map;
 
 /**
- * Serde (Serializer / Deserializer) class
+ * Serde (Serializer / Deserializer) class for Kafka Streams library compatible with Azure Schema Registry.
  */
-public class JsonSerde<T> implements Serde<T> {
+public class SpecificAvroKStreamSerde<T extends org.apache.avro.specific.SpecificRecord>
+        implements Serde<T> {
 
-    private Class<T> specificClass;
     private final Serde<T> inner;
 
     /**
-     * Empty constructor
+     * Empty constructor used with Kafka Streams
      */
-    public JsonSerde() {
-        inner = Serdes.serdeFrom(new KafkaJsonSerializer<T>(),
-                new KafkaJsonDeserializer<T>());
-    }
-
-    /**
-     * Constructor with specific class
-     * @param specificClass Class for Specific Record
-     *
-     */
-    public JsonSerde(Class<T> specificClass) {
-        this.specificClass = specificClass;
-        inner = Serdes.serdeFrom(new KafkaJsonSerializer<T>(),
-                new KafkaJsonDeserializer<T>());
+    public SpecificAvroKStreamSerde() {
+        inner = Serdes.serdeFrom(new KafkaAvroKStreamSerializer<T>(), new KafkaAvroKStreamDeserializer<T>());
     }
 
     @Override

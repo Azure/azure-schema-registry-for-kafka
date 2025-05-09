@@ -3,8 +3,8 @@
 
 package com.microsoft.azure.schemaregistry.kafka.avro.serde;
 
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroDeserializer;
-import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroSerializer;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroKStreamDeserializer;
+import com.microsoft.azure.schemaregistry.kafka.avro.KafkaAvroKStreamSerializer;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
@@ -14,17 +14,17 @@ import org.apache.kafka.common.serialization.Serializer;
 import java.util.Map;
 
 /**
- * Serde (Serializer / Deserializer) class
+ * Serde (Serializer / Deserializer) class for Kafka Streams library compatible with Azure Schema Registry.
  */
-public class GenericAvroSerde implements Serde<GenericRecord> {
+public class GenericAvroKStreamSerde implements Serde<GenericRecord> {
 
-    protected final Serde<GenericRecord> inner;
+    private final Serde<GenericRecord> inner;
 
     /**
-     * Empty constructor
+     * Empty constructor used with Kafka Streams
      */
-    public GenericAvroSerde() {
-        inner = Serdes.serdeFrom(new KafkaAvroSerializer(), new KafkaAvroDeserializer());
+    public GenericAvroKStreamSerde() {
+        inner = Serdes.serdeFrom(new KafkaAvroKStreamSerializer(), new KafkaAvroKStreamDeserializer());
     }
 
     @Override

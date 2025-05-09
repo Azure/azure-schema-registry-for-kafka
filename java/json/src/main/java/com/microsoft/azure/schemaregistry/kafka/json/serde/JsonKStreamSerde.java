@@ -3,8 +3,8 @@
 
 package com.microsoft.azure.schemaregistry.kafka.json.serde;
 
-import com.microsoft.azure.schemaregistry.kafka.json.KafkaJsonDeserializer;
-import com.microsoft.azure.schemaregistry.kafka.json.KafkaJsonSerializer;
+import com.microsoft.azure.schemaregistry.kafka.json.KafkaJsonKStreamDeserializer;
+import com.microsoft.azure.schemaregistry.kafka.json.KafkaJsonKStreamSerializer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -13,30 +13,29 @@ import org.apache.kafka.common.serialization.Serializer;
 import java.util.Map;
 
 /**
- * Serde (Serializer / Deserializer) class
+ * Serde (Serializer / Deserializer) class for Kafka Streams library compatible with Azure Schema Registry.
  */
-public class JsonSerde<T> implements Serde<T> {
+public class JsonKStreamSerde<T> implements Serde<T> {
 
     private Class<T> specificClass;
     private final Serde<T> inner;
 
     /**
-     * Empty constructor
+     * Empty constructor used with Kafka Streams
      */
-    public JsonSerde() {
-        inner = Serdes.serdeFrom(new KafkaJsonSerializer<T>(),
-                new KafkaJsonDeserializer<T>());
+    public JsonKStreamSerde() {
+        inner = Serdes.serdeFrom(new KafkaJsonKStreamSerializer<T>(),
+                new KafkaJsonKStreamDeserializer<T>());
     }
 
     /**
      * Constructor with specific class
      * @param specificClass Class for Specific Record
-     *
      */
-    public JsonSerde(Class<T> specificClass) {
+    public JsonKStreamSerde(Class<T> specificClass) {
         this.specificClass = specificClass;
-        inner = Serdes.serdeFrom(new KafkaJsonSerializer<T>(),
-                new KafkaJsonDeserializer<T>());
+        inner = Serdes.serdeFrom(new KafkaJsonKStreamSerializer<>(),
+                new KafkaJsonKStreamDeserializer<T>());
     }
 
     @Override
