@@ -1,0 +1,28 @@
+name: Kafka Avro CITs
+
+on:
+  push:
+    paths:
+      - 'java/avro/**'
+  pull_request:
+    paths:
+      - 'java/avro/**'
+
+jobs:
+  Build and Test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build package
+        run: mvn -B package --file java/avro/pom.xml
+
+      - name: Run tests
+        run: mvn -f java/avro/pom.xml test
