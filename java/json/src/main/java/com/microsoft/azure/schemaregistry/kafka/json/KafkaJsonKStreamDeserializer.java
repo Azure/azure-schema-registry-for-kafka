@@ -3,18 +3,12 @@
 
 package com.microsoft.azure.schemaregistry.kafka.json;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-
 import com.azure.core.credential.TokenCredential;
-import com.azure.identity.DefaultAzureCredentialBuilder;
-import org.apache.kafka.common.header.Headers;
-import org.apache.kafka.common.serialization.Deserializer;
 import com.azure.core.util.ClientOptions;
 import com.azure.data.schemaregistry.SchemaRegistryClient;
 import com.azure.data.schemaregistry.SchemaRegistryClientBuilder;
 import com.azure.data.schemaregistry.models.SchemaRegistrySchema;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,20 +17,26 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.serialization.Deserializer;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Deserializer implementation for Kafka consumer, implementing Kafka Deserializer interface.
  *
  * @see KafkaJsonSerializer See serializer class for upstream serializer implementation
  */
-public class KafkaJsonDeserializer<T> implements Deserializer<T> {
+public class KafkaJsonKStreamDeserializer<T> implements Deserializer<T> {
     private SchemaRegistryClient client;
     private KafkaJsonDeserializerConfig config;
 
     /**
      * Empty constructor used by Kafka consumer
      */
-    public KafkaJsonDeserializer() {
+    public KafkaJsonKStreamDeserializer() {
         super();
     }
 
@@ -81,7 +81,16 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
      */
     @Override
     public T deserialize(String topic, byte[] data) {
-        return null;
+        if (data == null) {
+            return null;
+        }
+        byte length = data[0];
+        String schemaId = new String(data, 1, length);
+        int bodyOffset = 1 + length;
+        int bodyLength = data.length - bodyOffset;
+        byte[] body = new byte[bodyLength];
+        System.arraycopy(data, bodyOffset, body, 0, bodyLength);
+        return getObject(schemaId, body);
     }
 
     /**
@@ -94,33 +103,40 @@ public class KafkaJsonDeserializer<T> implements Deserializer<T> {
      */
     @Override
     public T deserialize(String topic, Headers headers, byte[] data) {
-        T dataObject;
+        if (data == null) {
+            return null;
+        }
+        if (headers == null) {
+            return deserialize(topic, data);
+        }
         String schemaId;
+        if (headers.lastHeader("schemaId") != null) {
+            schemaId = new String(headers.lastHeader("schemaId").value());
+        } else {
+            throw new JsonSerializationException("Schema Id was not found in record headers", null);
+        }
+        return getObject(schemaId, data);
+    }
 
+    T getObject(String schemaId, byte[] body) {
         try {
             ObjectMapper mapper = new ObjectMapper().configure(
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             mapper.setVisibility(mapper.getVisibilityChecker().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
-            dataObject = (T) mapper.readValue(data, this.config.getJsonSpecificType());
-
-            if (headers.lastHeader("schemaId") != null) {
-                schemaId = new String(headers.lastHeader("schemaId").value());
-            } else {
-                throw new JsonSerializationException("Schema Id was not found in record headers", null);
-            }
+            T dataObject = (T) mapper.readValue(body, this.config.getJsonSpecificType());
 
             SchemaRegistrySchema schema = this.client.getSchema(schemaId);
 
             JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
             JsonSchema jSchema = factory.getSchema(schema.getDefinition());
-            JsonNode node = mapper.readTree(data);
+            JsonNode node = mapper.readTree(body);
 
             Set<ValidationMessage> errors = jSchema.validate(node);
             if (errors.size() == 0) {
                 return dataObject;
             } else {
                 throw new JsonSerializationException(
-                    "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
+                        "Failed to validate Json data. Validation errors:\n" + Arrays.toString(errors.toArray()), null);
             }
         } catch (JsonSerializationException e) {
             throw e;

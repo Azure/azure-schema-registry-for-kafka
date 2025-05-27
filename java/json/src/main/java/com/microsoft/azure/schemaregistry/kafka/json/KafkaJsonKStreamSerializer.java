@@ -27,7 +27,7 @@ import java.util.Map;
  *
  * @see KafkaJsonDeserializer See deserializer class for downstream deserializer implementation
  */
-public class KafkaJsonSerializer<T> implements Serializer<T> {
+public class KafkaJsonKStreamSerializer<T> implements Serializer<T> {
     private SchemaRegistryClient client;
     private String schemaGroup;
     private Boolean autoRegisterSchemas;
@@ -35,7 +35,7 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
   /**
    * Empty constructor for Kafka producer
     */
-    public KafkaJsonSerializer() {
+    public KafkaJsonKStreamSerializer() {
         super();
     }
 
@@ -89,17 +89,35 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
      */
     @Override
     public byte[] serialize(String topic, T record) {
-        return null;
+        if (record == null) {
+            return null;
+        }
+        byte[] recordBytes;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            recordBytes = mapper.writeValueAsBytes(record);
+            byte[] schemaIdBytes = getSchemaId(record).getBytes();
+            byte[] bytes = new byte[1 + schemaIdBytes.length + recordBytes.length];
+            bytes[0] = (byte) schemaIdBytes.length;
+            System.arraycopy(schemaIdBytes, 0, bytes, 1, schemaIdBytes.length);
+            System.arraycopy(recordBytes, 0, bytes, 1 + schemaIdBytes.length, recordBytes.length);
+            return bytes;
+        } catch (IllegalStateException e) {
+            throw new JsonSerializationException("Error occured while generating schema", e);
+        } catch (JsonProcessingException e) {
+            throw new JsonSerializationException("Error occured while serializing record into bytes", e);
+        } catch (Exception e) {
+            throw new JsonSerializationException("Execption occured during serialization", e);
+        }
     }
-
     /**
      * Serializes into a byte array, containing a GUID reference to schema
      * and the encoded payload.
-     *
+     * <p>
      * Null behavior matches Kafka treatment of null values.
      *
-     * @param topic Topic destination for record. Required by Kafka serializer interface, currently not used.
-     * @param record Object to be serialized, may be null
+     * @param topic   Topic destination for record. Required by Kafka serializer interface, currently not used.
+     * @param record  Object to be serialized, may be null
      * @param headers Record headers, may be null
      * @return byte[] payload for sending to EH Kafka service, may be null
      * @throws JsonSerializationException Wrapped exception catchable by core Kafka producer code
@@ -109,35 +127,16 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
         if (record == null) {
             return null;
         }
-
+        if (headers == null) {
+            return serialize(topic, record);
+        }
+        String schemaId;
         byte[] recordBytes;
-        SchemaProperties schemaProps;
         try {
             ObjectMapper mapper = new ObjectMapper();
             recordBytes = mapper.writeValueAsBytes(record);
-
-            SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
-                SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON);
-            SchemaGeneratorConfig config = configBuilder.build();
-            SchemaGenerator generator = new SchemaGenerator(config);
-            JsonNode jsonSchema = generator.generateSchema(record.getClass());
-            String jsonSchemaString = jsonSchema.toString();
-
-            if (this.autoRegisterSchemas) {
-                schemaProps = this.client.registerSchema(
-                    this.schemaGroup,
-                    record.getClass().getName(),
-                    jsonSchemaString,
-                    SchemaFormat.JSON);
-            } else {
-                schemaProps = this.client.getSchemaProperties(
-                    this.schemaGroup,
-                    record.getClass().getName(),
-                    jsonSchemaString,
-                    SchemaFormat.JSON);
-            }
-                        
-            headers.add("schemaId", schemaProps.getId().getBytes());
+            schemaId = this.getSchemaId(record);
+            headers.add("schemaId", schemaId.getBytes());
             return recordBytes;
         } catch (IllegalStateException e) {
             throw new JsonSerializationException("Error occured while generating schema", e);
@@ -148,6 +147,32 @@ public class KafkaJsonSerializer<T> implements Serializer<T> {
         }
     }
 
+    String getSchemaId(T record) {
+        SchemaProperties schemaProps;
+        SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(
+                SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON);
+        SchemaGeneratorConfig config = configBuilder.build();
+        SchemaGenerator generator = new SchemaGenerator(config);
+        JsonNode jsonSchema = generator.generateSchema(record.getClass());
+        String jsonSchemaString = jsonSchema.toString();
+
+        if (this.autoRegisterSchemas) {
+            schemaProps = this.client.registerSchema(
+                    this.schemaGroup,
+                    record.getClass().getName(),
+                    jsonSchemaString,
+                    SchemaFormat.JSON);
+        } else {
+            schemaProps = this.client.getSchemaProperties(
+                    this.schemaGroup,
+                    record.getClass().getName(),
+                    jsonSchemaString,
+                    SchemaFormat.JSON);
+        }
+        return schemaProps.getId();
+    }
+
     @Override
-    public void close() { }
+    public void close() {
+    }
 }
