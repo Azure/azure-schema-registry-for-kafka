@@ -9,7 +9,7 @@ on:
       - 'java/avro/**'
 
 jobs:
-  Build and Test:
+  Build_and_Test:
     runs-on: ubuntu-latest
 
     steps:
