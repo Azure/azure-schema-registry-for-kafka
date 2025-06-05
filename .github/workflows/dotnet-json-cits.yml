@@ -1,4 +1,4 @@
-name: Kafka Avro CITs
+name: .NET Json CITs
 
 on:
   push:
