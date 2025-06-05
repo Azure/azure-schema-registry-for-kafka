@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Kafka.Schem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Kafka.SchemaRegistry.Json", "src\Microsoft.Azure.Kafka.SchemaRegistry.Json.csproj", "{58486BD3-3E86-476B-BBA8-9AC8496DEC49}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Kafka.SchemaRegistry.Json.Tests", "tests\Microsoft.Azure.Kafka.SchemaRegistry.Json.Tests.csproj", "{71651ABE-42FC-4B49-988B-003578EDD777}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{58486BD3-3E86-476B-BBA8-9AC8496DEC49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58486BD3-3E86-476B-BBA8-9AC8496DEC49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58486BD3-3E86-476B-BBA8-9AC8496DEC49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71651ABE-42FC-4B49-988B-003578EDD777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71651ABE-42FC-4B49-988B-003578EDD777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71651ABE-42FC-4B49-988B-003578EDD777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71651ABE-42FC-4B49-988B-003578EDD777}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
