@@ -21,10 +21,10 @@ jobs:
           dotnet-version: '7.0.x'
       
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore csharp/json/Microsoft.Azure.Kafka.SchemaRegistry.Json.sln
 
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build csharp/json/Microsoft.Azure.Kafka.SchemaRegistry.Json.sln --no-restore
       
       - name: Run tests
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test csharp/json/Microsoft.Azure.Kafka.SchemaRegistry.Json.sln --no-build --verbosity normal

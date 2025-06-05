@@ -21,10 +21,10 @@ jobs:
           dotnet-version: '7.0.x'
       
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore csharp/avro/Microsoft.Azure.Kafka.SchemaRegistry.Avro.sln
 
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build csharp/avro/Microsoft.Azure.Kafka.SchemaRegistry.Avro.sln --no-restore
       
       - name: Run tests
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test csharp/avro/Microsoft.Azure.Kafka.SchemaRegistry.Avro.sln --no-build --verbosity normal
