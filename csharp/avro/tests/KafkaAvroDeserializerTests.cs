@@ -18,12 +18,10 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Constructor_ValidParameters_CreatesDeserializerSuccessfully()
 		{
-			// Arrange & Act
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
 
-			// Assert
 			Assert.IsNotNull(deserializer);
 		}
 
@@ -31,7 +29,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void Constructor_NullSchemaRegistryUrl_ThrowsArgumentNullException()
 		{
-			// Arrange & Act
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				null,
 				mockCredential.Object);
@@ -41,7 +38,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void Constructor_NullCredential_ThrowsArgumentNullException()
 		{
-			// Arrange & Act
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				null);
@@ -50,24 +46,20 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Constructor_EmptySchemaRegistryUrl_CreatesDeserializerSuccessfully()
 		{
-			// Arrange & Act
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				"",
 				mockCredential.Object);
 
-			// Assert
 			Assert.IsNotNull(deserializer);
 		}
 
 		[TestMethod]
 		public void Constructor_InvalidUrl_CreatesDeserializerSuccessfully()
 		{
-			// Arrange & Act
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				"invalid-url",
 				mockCredential.Object);
 
-			// Assert
 			Assert.IsNotNull(deserializer);
 		}
 
@@ -78,31 +70,26 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserialize_EmptyData_ReturnsNull()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
 			var emptyData = ReadOnlySpan<byte>.Empty;
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act
 			var result = deserializer.Deserialize(emptyData, false, context);
 
-			// Assert
 			Assert.IsNull(result);
 		}
 
 		[TestMethod]
 		public void Deserialize_IsNullTrue_HandlesExpectedExceptions()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
 			var someData = new ReadOnlySpan<byte>(new byte[] { 1, 2, 3, 4 });
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = deserializer.Deserialize(someData, true, context);
@@ -118,14 +105,12 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserialize_ValidDataWithoutHeaders_HandlesExpectedExceptions()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
 			var testData = new ReadOnlySpan<byte>(new byte[] { 1, 2, 3, 4, 5 });
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = deserializer.Deserialize(testData, false, context);
@@ -141,7 +126,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserialize_ValidDataWithHeaders_HandlesExpectedExceptions()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
@@ -154,7 +138,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 				context.Headers.Add("content-type", Encoding.UTF8.GetBytes("application/vnd.schemaregistry.v1+avro"));
 			}
 
-			// Act & Assert
 			try
 			{
 				var result = deserializer.Deserialize(testData, false, context);
@@ -170,14 +153,12 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserialize_WithKeyComponent_HandlesExpectedExceptions()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
 			var testData = new ReadOnlySpan<byte>(new byte[] { 1, 2, 3, 4, 5 });
 			var context = new SerializationContext(MessageComponentType.Key, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = deserializer.Deserialize(testData, false, context);
@@ -193,14 +174,12 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserialize_WithDifferentTopic_HandlesExpectedExceptions()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
 			var testData = new ReadOnlySpan<byte>(new byte[] { 1, 2, 3, 4, 5 });
 			var context = new SerializationContext(MessageComponentType.Value, "different-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = deserializer.Deserialize(testData, false, context);
@@ -216,14 +195,12 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserialize_SingleByteData_HandlesExpectedExceptions()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
 			var testData = new ReadOnlySpan<byte>(new byte[] { 42 });
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = deserializer.Deserialize(testData, false, context);
@@ -239,7 +216,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserialize_LargeData_HandlesExpectedExceptions()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
@@ -251,7 +227,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var testData = new ReadOnlySpan<byte>(largeData);
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = deserializer.Deserialize(testData, false, context);

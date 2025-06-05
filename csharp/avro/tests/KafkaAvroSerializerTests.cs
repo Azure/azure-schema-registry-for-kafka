@@ -16,41 +16,35 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Constructor_ValidParameters_CreatesSerializerSuccessfully()
 		{
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
 				ValidSchemaGroup);
 
-			// Assert
 			Assert.IsNotNull(serializer);
 		}
 
 		[TestMethod]
 		public void Constructor_ValidParametersWithAutoRegisterTrue_CreatesSerializerSuccessfully()
 		{
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
 				ValidSchemaGroup,
 				autoRegisterSchemas: true);
 
-			// Assert
 			Assert.IsNotNull(serializer);
 		}
 
 		[TestMethod]
 		public void Constructor_ValidParametersWithAutoRegisterFalse_CreatesSerializerSuccessfully()
 		{
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
 				ValidSchemaGroup,
 				autoRegisterSchemas: false);
 
-			// Assert
 			Assert.IsNotNull(serializer);
 		}
 
@@ -58,7 +52,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void Constructor_NullSchemaRegistryUrl_ThrowsArgumentNullException()
 		{
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				null,
 				mockCredential.Object,
@@ -69,7 +62,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void Constructor_NullCredential_ThrowsArgumentNullException()
 		{
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				null,
@@ -80,7 +72,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void Constructor_NullSchemaGroup_ThrowsArgumentNullException()
 		{
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -91,13 +82,11 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		public void Constructor_EmptySchemaRegistryUrl_CreatesSerializerSuccessfully()
 		{
 			// Note: Empty URL doesn't throw during construction - validation happens later
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				string.Empty,
 				mockCredential.Object,
 				ValidSchemaGroup);
 
-			// Assert
 			Assert.IsNotNull(serializer);
 		}
 
@@ -105,13 +94,11 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		public void Constructor_EmptySchemaGroup_CreatesSerializerSuccessfully()
 		{
 			// Note: Empty schema group appears to be allowed by the constructor
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
 				string.Empty);
 
-			// Assert
 			Assert.IsNotNull(serializer);
 		}
 
@@ -119,13 +106,11 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		public void Constructor_InvalidSchemaRegistryUrl_CreatesSerializerSuccessfully()
 		{
 			// Note: Invalid URL format doesn't throw during construction - validation happens later
-			// Arrange & Act
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				"invalid-url",
 				mockCredential.Object,
 				ValidSchemaGroup);
 
-			// Assert
 			Assert.IsNotNull(serializer);
 		}
 
@@ -136,7 +121,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serialize_ValidObject_ReturnsSerializedBytes()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -149,7 +133,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			// connection to pass. For true unit testing, we would need to mock the internal 
 			// SchemaRegistryAvroSerializer dependency.
 
-			// Act & Assert
 			// The actual serialization would require a valid schema registry connection
 			// For now, we verify the method signature and null handling
 			Assert.IsNotNull(serializer);
@@ -160,7 +143,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serialize_NullObject_ReturnsNull()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -168,17 +150,14 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act
 			var result = serializer.Serialize(null, context);
 
-			// Assert
 			Assert.IsNull(result, "Serializing null object should return null");
 		}
 
 		[TestMethod]
 		public void Serialize_ValidContext_AddsContentTypeHeader()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -190,17 +169,14 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			// Note: This test would require actual Schema Registry interaction to fully validate.
 			// In a real unit test scenario, we would need to mock the internal dependencies.
 
-			// Act & Assert
 			Assert.IsNotNull(serializer);
 			Assert.IsNotNull(testObject);
 			Assert.IsNotNull(context);
-			// Note: Headers may be null initially depending on SerializationContext implementation
 		}
 
 		[TestMethod]
 		public void Serialize_WithAutoRegisterTrue_CreatesSerializerSuccessfully()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -210,7 +186,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var testObject = new TestClass { Name = "Test User", Age = 35 };
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			Assert.IsNotNull(serializer);
 			Assert.IsNotNull(testObject);
 			Assert.IsNotNull(context);
@@ -219,7 +194,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serialize_WithAutoRegisterFalse_CreatesSerializerSuccessfully()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -229,7 +203,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var testObject = new TestClass { Name = "Another User", Age = 40 };
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			Assert.IsNotNull(serializer);
 			Assert.IsNotNull(testObject);
 			Assert.IsNotNull(context);
@@ -238,7 +211,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serialize_ValidObjectWithHeaders_AddsContentTypeHeader()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -251,7 +223,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			// Note: This test demonstrates the API but would require actual Schema Registry 
 			// connection to verify header addition behavior
 
-			// Act & Assert
 			Assert.IsNotNull(serializer);
 			Assert.IsNotNull(testObject);
 			Assert.IsNotNull(context);
@@ -261,7 +232,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serialize_EmptyObject_HandlesGracefully()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -273,7 +243,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			// Note: This test demonstrates handling of objects with default/empty values
 			// Actual behavior would depend on Schema Registry configuration and schema definition
 
-			// Act & Assert
 			Assert.IsNotNull(serializer);
 			Assert.IsNotNull(testObject);
 			Assert.IsNotNull(context);
@@ -282,7 +251,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serialize_DifferentMessageComponents_HandlesCorrectly()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -292,7 +260,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var keyContext = new SerializationContext(MessageComponentType.Key, "test-topic");
 			var valueContext = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			Assert.IsNotNull(serializer);
 			Assert.IsNotNull(testObject);
 			Assert.IsNotNull(keyContext);
@@ -304,7 +271,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serialize_DifferentTopics_HandlesCorrectly()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -314,7 +280,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var context1 = new SerializationContext(MessageComponentType.Value, "topic-1");
 			var context2 = new SerializationContext(MessageComponentType.Value, "topic-2");
 
-			// Act & Assert
 			Assert.IsNotNull(serializer);
 			Assert.IsNotNull(testObject);
 			Assert.IsNotNull(context1);

@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void RoundTrip_SameSchemaRegistryUrl_HandlesSchemaRegistryUnavailable()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -30,7 +29,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var originalObject = new TestClass { Name = "TestName", Age = 42 };
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var serializedData = serializer.Serialize(originalObject, context);
@@ -46,7 +44,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public async Task AsyncRoundTrip_SameSchemaRegistryUrl_HandlesSchemaRegistryUnavailable()
 		{
-			// Arrange
 			var asyncSerializer = new KafkaAvroAsyncSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -57,7 +54,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var originalObject = new TestClass { Name = "AsyncTestName", Age = 25 };
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var serializedData = await asyncSerializer.SerializeAsync(originalObject, context);
@@ -73,7 +69,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void RoundTrip_DifferentObjects_MaintainsDataIntegrity()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -90,7 +85,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			};
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			foreach (var originalObject in testObjects)
 			{
 				try
@@ -113,7 +107,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serializer_InvalidSchemaRegistryUrl_HandlesGracefully()
 		{
-			// Arrange
 			var invalidUrls = new[]
 			{
 				"invalid-url",
@@ -124,7 +117,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var testObject = new TestClass { Name = "Test", Age = 30 };
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			foreach (var invalidUrl in invalidUrls)
 			{
 				try
@@ -148,7 +140,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public async Task AsyncSerializer_NetworkTimeout_HandlesGracefully()
 		{
-			// Arrange
 			var serializer = new KafkaAvroAsyncSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -156,7 +147,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var testObject = new TestClass { Name = "TimeoutTest", Age = 40 };
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = await serializer.SerializeAsync(testObject, context);
@@ -172,7 +162,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserializer_CorruptedData_ThrowsAppropriateException()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
@@ -185,7 +174,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			};
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			foreach (var corruptedData in corruptedDataSets)
 			{
 				try
@@ -210,7 +198,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serializer_WithHeaders_HandlesCorrectly()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -221,7 +208,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			headers.Add("schema-version", System.Text.Encoding.UTF8.GetBytes("1.0"));
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic", headers);
 
-			// Act & Assert
 			try
 			{
 				var result = serializer.Serialize(testObject, context);
@@ -237,14 +223,12 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Deserializer_WithNullHeaders_HandlesGracefully()
 		{
-			// Arrange
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object);
 			var testData = new ReadOnlySpan<byte>(new byte[] { 0x01, 0x02, 0x03, 0x04 });
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic", null);
 
-			// Act & Assert
 			try
 			{
 				var result = deserializer.Deserialize(testData, false, context);
@@ -260,7 +244,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serializer_MessageComponentType_Key_Works()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -268,7 +251,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var testObject = new TestClass { Name = "KeyTest", Age = 45 };
 			var context = new SerializationContext(MessageComponentType.Key, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = serializer.Serialize(testObject, context);
@@ -288,7 +270,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serializer_AutoRegisterSchemas_True_AttemptsRegistration()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -297,7 +278,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var testObject = new TestClass { Name = "AutoRegisterTest", Age = 50 };
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = serializer.Serialize(testObject, context);
@@ -313,7 +293,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public void Serializer_AutoRegisterSchemas_False_DoesNotAttemptRegistration()
 		{
-			// Arrange
 			var serializer = new KafkaAvroSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -322,7 +301,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var testObject = new TestClass { Name = "NoAutoRegisterTest", Age = 55 };
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act & Assert
 			try
 			{
 				var result = serializer.Serialize(testObject, context);
@@ -338,7 +316,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 		[TestMethod]
 		public async Task AsyncSerializer_ConcurrentSerialization_HandlesCorrectly()
 		{
-			// Arrange
 			var serializer = new KafkaAvroAsyncSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
@@ -346,7 +323,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 			var tasks = new List<Task>();
 			var context = new SerializationContext(MessageComponentType.Value, "test-topic");
 
-			// Act
 			for (int i = 0; i < 10; i++)
 			{
 				var testObject = new TestClass { Name = $"Concurrent{i}", Age = i };
@@ -366,7 +342,6 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 				tasks.Add(task);
 			}
 
-			// Assert
 			await Task.WhenAll(tasks);
 			Assert.IsTrue(true); // All concurrent operations completed
 		}
