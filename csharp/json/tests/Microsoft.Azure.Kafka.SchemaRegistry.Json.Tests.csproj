@@ -14,16 +14,25 @@
       -->
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
   </PropertyGroup>
-
   <ItemGroup>
+    <PackageReference Include="Azure.Data.SchemaRegistry" Version="1.4.0" />
+    <PackageReference Include="Confluent.Kafka" Version="2.10.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.12.6" />
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.4.3" />
+    <PackageReference Include="Moq" Version="4.18.4" />
     <PackageReference Include="MSTest" Version="3.6.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.Azure.Kafka.SchemaRegistry.Json.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <Using Include="System.Collections.Generic" />
   </ItemGroup>
 
 </Project>

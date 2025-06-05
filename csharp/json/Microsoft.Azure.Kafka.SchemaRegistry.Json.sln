@@ -8,6 +8,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Kafka.SchemaRegistry.Json", "src\Microsoft.Azure.Kafka.SchemaRegistry.Json.csproj", "{58486BD3-3E86-476B-BBA8-9AC8496DEC49}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Kafka.SchemaRegistry.Json.Tests", "tests\Microsoft.Azure.Kafka.SchemaRegistry.Json.Tests.csproj", "{71651ABE-42FC-4B49-988B-003578EDD777}"
+	ProjectSection(ProjectDependencies) = postProject
+		{58486BD3-3E86-476B-BBA8-9AC8496DEC49} = {58486BD3-3E86-476B-BBA8-9AC8496DEC49}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
