@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
     using global::Azure;
     using global::Azure.Core;
     using global::Azure.Data.SchemaRegistry;
+    using global::Azure.Messaging;
     using Microsoft.Azure.Data.SchemaRegistry.ApacheAvro;
 
     /// <summary>
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
                 return default(T);
             }
 
-            BinaryContent content = new BinaryContent
+            MessageContent content = new MessageContent
             {
                 Data = new BinaryData(data.ToArray()),
             };
