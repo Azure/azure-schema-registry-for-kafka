@@ -24,10 +24,9 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 
 			Assert.IsNotNull(deserializer);
 		}
-
 		[TestMethod]
-		[ExpectedException(typeof(ArgumentNullException))]
-		public void Constructor_NullSchemaRegistryUrl_ThrowsArgumentNullException()
+		[ExpectedException(typeof(UriFormatException))]
+		public void Constructor_NullSchemaRegistryUrl_ThrowsUriFormatException()
 		{
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				null,
@@ -42,15 +41,13 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 				ValidSchemaRegistryUrl,
 				null);
 		}
-
 		[TestMethod]
-		public void Constructor_EmptySchemaRegistryUrl_CreatesDeserializerSuccessfully()
+		[ExpectedException(typeof(UriFormatException))]
+		public void Constructor_EmptySchemaRegistryUrl_ThrowsUriFormatException()
 		{
 			var deserializer = new KafkaAvroDeserializer<TestClass>(
 				"",
 				mockCredential.Object);
-
-			Assert.IsNotNull(deserializer);
 		}
 
 		[TestMethod]

@@ -49,10 +49,9 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 
 			Assert.IsNotNull(serializer);
 		}
-
 		[TestMethod]
-		[ExpectedException(typeof(ArgumentNullException))]
-		public void Constructor_NullSchemaRegistryUrl_ThrowsArgumentNullException()
+		[ExpectedException(typeof(UriFormatException))]
+		public void Constructor_NullSchemaRegistryUrl_ThrowsUriFormatException()
 		{
 			var serializer = new KafkaAvroAsyncSerializer<TestClass>(
 				null,
@@ -69,26 +68,24 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro.Tests
 				null,
 				ValidSchemaGroup);
 		}
-
 		[TestMethod]
-		[ExpectedException(typeof(ArgumentNullException))]
-		public void Constructor_NullSchemaGroup_ThrowsArgumentNullException()
+		public void Constructor_NullSchemaGroup_DoesNotThrowException()
 		{
 			var serializer = new KafkaAvroAsyncSerializer<TestClass>(
 				ValidSchemaRegistryUrl,
 				mockCredential.Object,
 				null);
-		}
 
+			Assert.IsNotNull(serializer);
+		}
 		[TestMethod]
-		public void Constructor_EmptySchemaRegistryUrl_CreatesSerializerSuccessfully()
+		[ExpectedException(typeof(UriFormatException))]
+		public void Constructor_EmptySchemaRegistryUrl_ThrowsUriFormatException()
 		{
 			var serializer = new KafkaAvroAsyncSerializer<TestClass>(
 				"",
 				mockCredential.Object,
 				ValidSchemaGroup);
-
-			Assert.IsNotNull(serializer);
 		}
 
 		[TestMethod]
