@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
     using global::Azure.Data.SchemaRegistry;
     using Confluent.Kafka;
     using Microsoft.Azure.Data.SchemaRegistry.ApacheAvro;
+    using global::Azure.Messaging;
 
     /// <summary>
     /// Implementation of Confluent .NET Kafka async serializer, wrapping Azure Schema Registry C# implementation.
@@ -22,7 +23,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
     public class KafkaAvroAsyncSerializer<T> : IAsyncSerializer<T>
     {
         private readonly SchemaRegistryAvroSerializer serializer;
-        
+
         public KafkaAvroAsyncSerializer(string schemaRegistryUrl, TokenCredential credential, string schemaGroup, Boolean autoRegisterSchemas = false)
         {
             this.serializer = new SchemaRegistryAvroSerializer(
@@ -43,7 +44,7 @@ namespace Microsoft.Azure.Kafka.SchemaRegistry.Avro
                 return null;
             }
 
-            BinaryContent content = await serializer.SerializeAsync<BinaryContent, T>(o);
+            MessageContent content = await serializer.SerializeAsync<MessageContent, T>(o);
             var schemaIdBytes = Encoding.UTF8.GetBytes(content.ContentType.ToString());
             context.Headers.Add("content-type", schemaIdBytes);
             return content.Data.ToArray();

@@ -1,0 +1,30 @@
+name: .NET Json CITs
+
+on:
+  push:
+    paths:
+      - 'csharp/json/**'
+  pull_request:
+    paths:
+      - 'csharp/json/**'
+
+jobs:
+  Build_and_Test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore dependencies
+        run: dotnet restore csharp/json/Microsoft.Azure.Kafka.SchemaRegistry.Json.sln
+
+      - name: Build
+        run: dotnet build csharp/json/Microsoft.Azure.Kafka.SchemaRegistry.Json.sln --no-restore
+      
+      - name: Run tests
+        run: dotnet test csharp/json/Microsoft.Azure.Kafka.SchemaRegistry.Json.sln --no-build --verbosity normal
