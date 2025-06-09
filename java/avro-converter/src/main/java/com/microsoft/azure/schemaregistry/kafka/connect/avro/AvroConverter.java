@@ -34,7 +34,7 @@ public class AvroConverter implements Converter {
     private SchemaRegistryApacheAvroSerializer serializer;
     private SchemaRegistryApacheAvroSerializer deserializer;
     private AvroConverterConfig avroConverterConfig;
-
+    private boolean isKey;
     /**
      * Empty constructor for instantiation by Connect framework.
      */
@@ -55,6 +55,7 @@ public class AvroConverter implements Converter {
      * @param isKey Indicates if serializing record key or value
      */
     public void configure(Map<String, ?> configs, boolean isKey) {
+        this.isKey=isKey;
         this.avroConverterConfig = new AvroConverterConfig(configs);
 
         TokenCredential tokenCredential = new ClientSecretCredentialBuilder()
@@ -110,8 +111,11 @@ public class AvroConverter implements Converter {
             MessageWithMetadata message = serializer.serializeMessageData(avroValue,
                 TypeReference.createInstance(MessageWithMetadata.class));
 
+            // Add content type to headers specific to key and value to avoid
+            // conflusion during deserialization
             byte[] contentTypeBytes = message.getContentType().getBytes();
-            headers.add("content-type", contentTypeBytes);
+            String headerKey = isKey ? "content-type-key" : "content-type-value";
+            headers.add(headerKey, contentTypeBytes);
 
             return message.getBodyAsBinaryData().toBytes();
         } catch (SchemaRegistryApacheAvroException e) {
@@ -146,7 +150,10 @@ public class AvroConverter implements Converter {
             MessageWithMetadata message = new MessageWithMetadata();
             message.setBodyAsBinaryData(BinaryData.fromBytes(value));
 
-            Header contentTypeHeader = headers.lastHeader("content-type");
+            // Get content type from headers specific to key and value
+            Header contentTypeHeader = isKey
+                    ? headers.lastHeader("content-type-key")
+                    : headers.lastHeader("content-type-value");
             if (contentTypeHeader != null) {
                 contentTypeString = new String(contentTypeHeader.value());
                 message.setContentType(contentTypeString);
